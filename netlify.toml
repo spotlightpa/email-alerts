@@ -4,7 +4,7 @@
   publish = "public"
 
 [build.environment]
-  GO_IMPORT_PATH = "github.com/carlmjohnson/netlify-go-function-demo"
+  GO_IMPORT_PATH = "github.com/spotlightpa/email-alerts"
   GO111MODULE = "on"
 
 [[redirects]]
