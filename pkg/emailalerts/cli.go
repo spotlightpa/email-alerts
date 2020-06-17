@@ -78,6 +78,7 @@ func (app *appEnv) Exec() (err error) {
 		}).
 		Handle(app.routes())
 
+	app.Printf("starting on %s", portStr)
 	return listener(portStr, routes)
 }
 
@@ -86,6 +87,10 @@ func (app *appEnv) initSentry(dsn string) error {
 	if app.isLambda() {
 		app.Printf("setting sentry sync with timeout")
 		transport = &sentry.HTTPSyncTransport{Timeout: 5 * time.Second}
+	}
+	if dsn == "" {
+		app.Printf("no Sentry DSN")
+		return nil
 	}
 	return sentry.Init(sentry.ClientOptions{
 		Dsn:       dsn,
