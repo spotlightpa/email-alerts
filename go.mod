@@ -11,4 +11,5 @@ require (
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/peterbourgon/ff/v3 v3.0.0
 	github.com/tj/assert v0.0.0-20190920132354-ee03d75cd160 // indirect
+	golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297
 )

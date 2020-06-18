@@ -18,14 +18,19 @@ func (app *appEnv) routes() http.Handler {
 	r.Use(app.versionMiddleware)
 	r.Get("/api/healthcheck", app.ping)
 	r.Get(`/api/healthcheck/{code:\d{3}}`, app.pingErr)
-	r.NotFound(app.notFound)
-
+	r.Post(`/api/add-contact`, app.postAddContact)
+	if app.isLambda() {
+		r.NotFound(app.notFound)
+	} else {
+		r.NotFound(http.FileServer(http.Dir("./public")).ServeHTTP)
+	}
 	return r
 }
 
 // common errors
 var (
-	errNotFound = withStatus(http.StatusNotFound, fmt.Errorf("not found"))
+	errNotFound   = withStatus(http.StatusNotFound, fmt.Errorf("not found"))
+	errBadRequest = withStatus(http.StatusBadRequest, fmt.Errorf("bad request"))
 )
 
 func (app *appEnv) notFound(w http.ResponseWriter, r *http.Request) {
@@ -52,4 +57,19 @@ func (app *appEnv) pingErr(w http.ResponseWriter, r *http.Request) {
 
 	app.errorResponse(r.Context(), w,
 		withStatus(statusCode, fmt.Errorf("test ping")))
+}
+
+func (app *appEnv) postAddContact(w http.ResponseWriter, r *http.Request) {
+	app.Printf("start postAddContact")
+	email := r.FormValue("email")
+	first := r.FormValue("first_name")
+	last := r.FormValue("last_name")
+	fips := r.FormValue("fips")
+
+	if err := app.addContact(r.Context(), first, last, email, fips); err != nil {
+		app.logErr(r.Context(), err)
+		http.Redirect(w, r, "/sorry.html", http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/thanks.html", http.StatusSeeOther)
 }
