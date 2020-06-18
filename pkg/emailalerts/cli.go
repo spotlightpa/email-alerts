@@ -42,7 +42,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 	app.l = log.New(nil, AppName+" ", log.LstdFlags)
 	flagext.LoggerVar(fs, app.l, "silent", flagext.LogSilent, "don't log debug output")
 	sentryDSN := fs.String("sentry-dsn", "", "DSN `pseudo-URL` for Sentry")
-
+	flagext.Callback(fs, "sendgrid-token", "", "`token` for SendGrid API", app.setSendGrid)
 	if err := ff.Parse(fs, args, ff.WithEnvVarPrefix("EMAIL_ALERTS")); err != nil {
 		return err
 	}
@@ -57,6 +57,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 type appEnv struct {
 	port int
 	l    *log.Logger
+	sg   *http.Client
 }
 
 func (app *appEnv) Exec() (err error) {
