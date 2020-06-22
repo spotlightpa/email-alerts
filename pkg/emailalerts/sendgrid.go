@@ -3,66 +3,9 @@ package emailalerts
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"strings"
-	"time"
-)
 
-func (app *appEnv) setSendGrid(token string) error {
-	// shallow copy
-	app.sg = &*http.DefaultClient
-	app.sg.Transport = sendGridRT{
-		fmt.Sprintf("Bearer %s", token),
-	}
-	app.sg.Timeout = 5 * time.Second
-	return nil
-}
-
-type sendGridRT struct {
-	auth string
-}
-
-func (sg sendGridRT) RoundTrip(r *http.Request) (*http.Response, error) {
-	r.Header.Set("Authorization", sg.auth)
-	return http.DefaultTransport.RoundTrip(r)
-}
-
-type sendGridAddContactsRequest struct {
-	ListIds  []string          `json:"list_ids"`
-	Contacts []sendGridContact `json:"contacts"`
-}
-
-type sendGridContact struct {
-	Email     string `json:"email"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-}
-
-type sendGridSendRequest struct {
-	Personalizations []personalization `json:"personalizations"`
-	From             contact           `json:"from"`
-	ReplyTo          contact           `json:"reply_to"`
-	Contents         []content         `json:"content"`
-}
-
-type contact struct {
-	Email string `json:"email"`
-	Name  string `json:"name"`
-}
-
-type personalization struct {
-	To      []contact `json:"to"`
-	Subject string    `json:"subject"`
-}
-
-type content struct {
-	Type  string `json:"type"`
-	Value string `json:"value"`
-}
-
-const (
-	sendGridAddContactsURL = "https://api.sendgrid.com/v3/marketing/contacts"
-	sendGridSendURL        = "https://api.sendgrid.com/v3/mail/send"
+	"github.com/spotlightpa/email-alerts/pkg/sendgrid"
 )
 
 func (app *appEnv) addContact(ctx context.Context, first, last, email, fips string) error {
@@ -74,40 +17,40 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email, fips stri
 		return fmt.Errorf("invalid email: %q", email)
 	}
 	var data interface{}
-	data = sendGridAddContactsRequest{
+	data = sendgrid.AddContactsRequest{
 		ListIds: []string{id},
-		Contacts: []sendGridContact{{
+		Contacts: []sendgrid.Contact{{
 			FirstName: first,
 			LastName:  last,
 			Email:     email,
 		}},
 	}
-	if err := putJSON(ctx, app.sg, sendGridAddContactsURL, data); err != nil {
+	if err := putJSON(ctx, app.sg, sendgrid.AddContactsURL, data); err != nil {
 		return err
 	}
-	data = sendGridSendRequest{
-		Personalizations: []personalization{{
+	data = sendgrid.SendRequest{
+		Personalizations: []sendgrid.Personalization{{
 			Subject: fmt.Sprintf(
 				"Welcome to the %s COVID-19 List from Spotlight PA",
 				fipsToList[fips].Name,
 			),
-			To: []contact{{
+			To: []sendgrid.Address{{
 				Name:  first + " " + last,
 				Email: email,
 			}},
 		}},
-		From: contact{
+		From: sendgrid.Address{
 			Name:  "Spotlight PA",
 			Email: "newsletters@spotlightpa.org",
 		},
-		ReplyTo: contact{
+		ReplyTo: sendgrid.Address{
 			Name:  "Spotlight PA",
 			Email: "newsletters@spotlightpa.org",
 		},
-		Contents: []content{{
+		Contents: []sendgrid.Content{{
 			Type:  "text/plain",
 			Value: "You have succesfully signed up for the list! :-)",
 		}},
 	}
-	return postJSON(ctx, app.sg, sendGridSendURL, data)
+	return postJSON(ctx, app.sg, sendgrid.SendURL, data)
 }

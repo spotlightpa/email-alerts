@@ -14,6 +14,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/peterbourgon/ff/v3"
+	"github.com/spotlightpa/email-alerts/pkg/sendgrid"
 )
 
 const AppName = "email-alerts"
@@ -42,7 +43,12 @@ func (app *appEnv) ParseArgs(args []string) error {
 	app.l = log.New(nil, AppName+" ", log.LstdFlags)
 	flagext.LoggerVar(fs, app.l, "silent", flagext.LogSilent, "don't log debug output")
 	sentryDSN := fs.String("sentry-dsn", "", "DSN `pseudo-URL` for Sentry")
-	flagext.Callback(fs, "sendgrid-token", "", "`token` for SendGrid API", app.setSendGrid)
+	app.sg = sendgrid.NewMockClient(app.l)
+	flagext.Callback(fs, "sendgrid-token", "", "`token` for SendGrid API",
+		func(token string) error {
+			app.sg = sendgrid.NewClient(token)
+			return nil
+		})
 	if err := ff.Parse(fs, args, ff.WithEnvVarPrefix("EMAIL_ALERTS")); err != nil {
 		return err
 	}
