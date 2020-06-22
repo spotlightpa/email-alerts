@@ -38,7 +38,32 @@ type sendGridContact struct {
 	LastName  string `json:"last_name"`
 }
 
-const sendGridAddContactsURL = "https://api.sendgrid.com/v3/marketing/contacts"
+type sendGridSendRequest struct {
+	Personalizations []personalization `json:"personalizations"`
+	From             contact           `json:"from"`
+	ReplyTo          contact           `json:"reply_to"`
+	Contents         []content         `json:"content"`
+}
+
+type contact struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
+}
+
+type personalization struct {
+	To      []contact `json:"to"`
+	Subject string    `json:"subject"`
+}
+
+type content struct {
+	Type  string `json:"type"`
+	Value string `json:"value"`
+}
+
+const (
+	sendGridAddContactsURL = "https://api.sendgrid.com/v3/marketing/contacts"
+	sendGridSendURL        = "https://api.sendgrid.com/v3/mail/send"
+)
 
 func (app *appEnv) addContact(ctx context.Context, first, last, email, fips string) error {
 	id := fipsToList[fips].ID
@@ -48,7 +73,8 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email, fips stri
 	if !strings.Contains(email, "@") {
 		return fmt.Errorf("invalid email: %q", email)
 	}
-	data := sendGridAddContactsRequest{
+	var data interface{}
+	data = sendGridAddContactsRequest{
 		ListIds: []string{id},
 		Contacts: []sendGridContact{{
 			FirstName: first,
@@ -56,5 +82,32 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email, fips stri
 			Email:     email,
 		}},
 	}
-	return putJSON(ctx, app.sg, sendGridAddContactsURL, data)
+	if err := putJSON(ctx, app.sg, sendGridAddContactsURL, data); err != nil {
+		return err
+	}
+	data = sendGridSendRequest{
+		Personalizations: []personalization{{
+			Subject: fmt.Sprintf(
+				"Welcome to the %s COVID-19 List from Spotlight PA",
+				fipsToList[fips].Name,
+			),
+			To: []contact{{
+				Name:  first + " " + last,
+				Email: email,
+			}},
+		}},
+		From: contact{
+			Name:  "Spotlight PA",
+			Email: "newsletters@spotlightpa.org",
+		},
+		ReplyTo: contact{
+			Name:  "Spotlight PA",
+			Email: "newsletters@spotlightpa.org",
+		},
+		Contents: []content{{
+			Type:  "text/plain",
+			Value: "You have succesfully signed up for the list! :-)",
+		}},
+	}
+	return postJSON(ctx, app.sg, sendGridSendURL, data)
 }
