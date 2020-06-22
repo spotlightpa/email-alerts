@@ -6,6 +6,7 @@ import (
 	"net/http/httputil"
 	"strconv"
 
+	"github.com/carlmjohnson/resperr"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
@@ -29,12 +30,11 @@ func (app *appEnv) routes() http.Handler {
 
 // common errors
 var (
-	errNotFound   = withStatus(http.StatusNotFound, fmt.Errorf("not found"))
-	errBadRequest = withStatus(http.StatusBadRequest, fmt.Errorf("bad request"))
+	errBadRequest = resperr.WithStatusCode(nil, http.StatusBadRequest)
 )
 
 func (app *appEnv) notFound(w http.ResponseWriter, r *http.Request) {
-	app.errorResponse(r.Context(), w, fmt.Errorf("%q: %w", r.URL, errNotFound))
+	app.errorResponse(r.Context(), w, resperr.NotFound(r))
 }
 
 func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
@@ -50,13 +50,14 @@ func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
 	w.Write(b)
 }
 
+var errPing = fmt.Errorf("test ping")
+
 func (app *appEnv) pingErr(w http.ResponseWriter, r *http.Request) {
 	code := chi.URLParam(r, "code")
 	statusCode, _ := strconv.Atoi(code)
 	app.Printf("start pingErr %q", code)
 
-	app.errorResponse(r.Context(), w,
-		withStatus(statusCode, fmt.Errorf("test ping")))
+	app.errorResponse(r.Context(), w, resperr.WithStatusCode(errPing, statusCode))
 }
 
 func (app *appEnv) postAddContact(w http.ResponseWriter, r *http.Request) {

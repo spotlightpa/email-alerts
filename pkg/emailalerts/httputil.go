@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 
+	"github.com/carlmjohnson/resperr"
 	"github.com/getsentry/sentry-go"
 	"golang.org/x/net/context/ctxhttp"
 )
@@ -46,35 +46,13 @@ func (app *appEnv) logErr(ctx context.Context, err error) {
 	app.Printf("err: %v", err)
 }
 
-type statusErr struct {
-	Cause      error
-	StatusCode int
-}
-
-func withStatus(code int, err error) error {
-	return &statusErr{err, code}
-}
-
-func (se *statusErr) Error() string {
-	return fmt.Sprintf("[%d] %v", se.StatusCode, se.Cause)
-}
-
-func (se *statusErr) Unwrap() error {
-	return se.Cause
-}
-
 func errorResponseFrom(err error) (status int, data interface{}) {
-	if se := new(statusErr); errors.As(err, &se) {
-		return se.StatusCode, struct {
-			Error string `json:"error"`
-		}{
-			http.StatusText(se.StatusCode),
-		}
-	}
-	return http.StatusInternalServerError, struct {
+	code := resperr.StatusCode(err)
+	msg := resperr.UserMessage(err)
+	return code, struct {
 		Error string `json:"error"`
 	}{
-		http.StatusText(http.StatusInternalServerError),
+		msg,
 	}
 }
 
