@@ -49,8 +49,11 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email, fips stri
 		},
 		Contents: []sendgrid.Content{{
 			Type:  "text/plain",
-			Value: "You have succesfully signed up for the list! :-)",
+			Value: "You have succesfully signed up for the list! :-)\n\n",
 		}},
+		UnsubGroup: sendgrid.UnsubGroup{
+			ID: 13641,
+		},
 	}
 	return postJSON(ctx, app.sg, sendgrid.SendURL, data)
 }

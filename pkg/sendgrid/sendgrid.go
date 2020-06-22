@@ -77,6 +77,7 @@ type SendRequest struct {
 	From             Address           `json:"from"`
 	ReplyTo          Address           `json:"reply_to"`
 	Contents         []Content         `json:"content"`
+	UnsubGroup       UnsubGroup        `json:"asm"`
 }
 
 type Address struct {
@@ -92,4 +93,8 @@ type Personalization struct {
 type Content struct {
 	Type  string `json:"type"`
 	Value string `json:"value"`
+}
+
+type UnsubGroup struct {
+	ID int `json:"group_id"`
 }
