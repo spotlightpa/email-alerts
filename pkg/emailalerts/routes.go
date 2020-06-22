@@ -14,6 +14,9 @@ import (
 func (app *appEnv) routes() http.Handler {
 	r := chi.NewRouter()
 	// r.Use(middleware.RequestID)
+	if !app.isLambda() {
+		r.Use(middleware.Recoverer)
+	}
 	r.Use(middleware.RealIP)
 	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
 	r.Use(app.versionMiddleware)
