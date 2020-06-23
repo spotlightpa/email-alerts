@@ -13,8 +13,8 @@ import (
 
 func (app *appEnv) routes() http.Handler {
 	r := chi.NewRouter()
-	// r.Use(middleware.RequestID)
 	if !app.isLambda() {
+		r.Use(middleware.RequestID)
 		r.Use(middleware.Recoverer)
 	}
 	r.Use(middleware.RealIP)
