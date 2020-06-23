@@ -76,7 +76,7 @@ type SendRequest struct {
 	Personalizations []Personalization `json:"personalizations"`
 	From             Address           `json:"from"`
 	ReplyTo          Address           `json:"reply_to"`
-	Contents         []Content         `json:"content"`
+	TemplateID       string            `json:"template_id"`
 	UnsubGroup       UnsubGroup        `json:"asm"`
 }
 
@@ -86,8 +86,8 @@ type Address struct {
 }
 
 type Personalization struct {
-	To      []Address `json:"to"`
-	Subject string    `json:"subject"`
+	To            []Address         `json:"to"`
+	Substitutions map[string]string `json:"dynamic_template_data"`
 }
 
 type Content struct {

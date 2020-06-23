@@ -16,6 +16,7 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email, fips stri
 	if !strings.Contains(email, "@") {
 		return fmt.Errorf("invalid email: %q", email)
 	}
+	county := fipsToList[fips].Name
 	var data interface{}
 	data = sendgrid.AddContactsRequest{
 		ListIds: []string{id},
@@ -30,14 +31,15 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email, fips stri
 	}
 	data = sendgrid.SendRequest{
 		Personalizations: []sendgrid.Personalization{{
-			Subject: fmt.Sprintf(
-				"Welcome to the %s COVID-19 List from Spotlight PA",
-				fipsToList[fips].Name,
-			),
 			To: []sendgrid.Address{{
 				Name:  first + " " + last,
 				Email: email,
 			}},
+			Substitutions: map[string]string{
+				"first":  first,
+				"last":   last,
+				"county": county,
+			},
 		}},
 		From: sendgrid.Address{
 			Name:  "Spotlight PA",
@@ -47,10 +49,7 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email, fips stri
 			Name:  "Spotlight PA",
 			Email: "newsletters@spotlightpa.org",
 		},
-		Contents: []sendgrid.Content{{
-			Type:  "text/plain",
-			Value: "You have succesfully signed up for the list! :-)\n\n",
-		}},
+		TemplateID: "d-375d4ead8f99430d9ed1a674dd40ffa0",
 		UnsubGroup: sendgrid.UnsubGroup{
 			ID: 13641,
 		},
