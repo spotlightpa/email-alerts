@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"strconv"
+	"strings"
 
 	"github.com/carlmjohnson/resperr"
 	"github.com/go-chi/chi"
@@ -13,8 +15,9 @@ import (
 
 func (app *appEnv) routes() http.Handler {
 	r := chi.NewRouter()
-	if !app.isLambda() {
+	if app.isLambda() {
 		r.Use(middleware.RequestID)
+	} else {
 		r.Use(middleware.Recoverer)
 	}
 	r.Use(middleware.RealIP)
@@ -72,8 +75,21 @@ func (app *appEnv) postAddContact(w http.ResponseWriter, r *http.Request) {
 
 	if err := app.addContact(r.Context(), first, last, email, fips); err != nil {
 		app.logErr(r.Context(), err)
-		http.Redirect(w, r, "/sorry.html", http.StatusSeeOther)
+
+		sorryURL := validateRedirect(r.FormValue("redirect_sorry"), "/sorry.html")
+		http.Redirect(w, r, sorryURL, http.StatusSeeOther)
 		return
 	}
-	http.Redirect(w, r, "/thanks.html", http.StatusSeeOther)
+	// Allow redirects to .spotlightpa.org
+	dest := validateRedirect(r.FormValue("redirect"), "/thanks.html")
+	http.Redirect(w, r, dest, http.StatusSeeOther)
+}
+
+func validateRedirect(formVal, fallback string) string {
+	if u, err := url.Parse(formVal); err == nil {
+		if u.Scheme == "https" && strings.HasSuffix(u.Host, ".spotlightpa.org") {
+			return formVal
+		}
+	}
+	return fallback
 }
