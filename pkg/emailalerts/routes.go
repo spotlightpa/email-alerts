@@ -71,9 +71,9 @@ func (app *appEnv) postAddContact(w http.ResponseWriter, r *http.Request) {
 	email := r.FormValue("email")
 	first := r.FormValue("first_name")
 	last := r.FormValue("last_name")
-	fips := r.FormValue("fips")
+	fipsCodes := r.PostForm["fips"]
 
-	if err := app.addContact(r.Context(), first, last, email, fips); err != nil {
+	if err := app.addContact(r.Context(), first, last, email, fipsCodes); err != nil {
 		app.logErr(r.Context(), err)
 
 		sorryURL := validateRedirect(r.FormValue("redirect_sorry"), "/sorry.html")

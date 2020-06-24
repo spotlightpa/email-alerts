@@ -8,18 +8,26 @@ import (
 	"github.com/spotlightpa/email-alerts/pkg/sendgrid"
 )
 
-func (app *appEnv) addContact(ctx context.Context, first, last, email, fips string) error {
-	id := fipsToList[fips].ID
-	if id == "" {
-		return fmt.Errorf("invalid fips: %q", fips)
-	}
+func (app *appEnv) addContact(ctx context.Context, first, last, email string, fipsCodes []string) error {
 	if !strings.Contains(email, "@") {
 		return fmt.Errorf("invalid email: %q", email)
 	}
-	county := fipsToList[fips].Name
+	if len(fipsCodes) < 1 {
+		return fmt.Errorf("no county mailing list selected")
+	}
+	ids := make([]string, 0, len(fipsCodes))
+	counties := make([]string, 0, len(fipsCodes))
+	for _, fips := range fipsCodes {
+		id := fipsToList[fips].ID
+		if id == "" {
+			return fmt.Errorf("invalid fips: %q", fips)
+		}
+		ids = append(ids, id)
+		counties = append(counties, fipsToList[fips].Name)
+	}
 	var data interface{}
 	data = sendgrid.AddContactsRequest{
-		ListIds: []string{id},
+		ListIds: ids,
 		Contacts: []sendgrid.Contact{{
 			FirstName: first,
 			LastName:  last,
@@ -38,7 +46,7 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email, fips stri
 			Substitutions: map[string]string{
 				"first":  first,
 				"last":   last,
-				"county": county,
+				"county": strings.Join(counties, " / "),
 			},
 		}},
 		From: sendgrid.Address{
