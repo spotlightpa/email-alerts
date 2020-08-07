@@ -53,7 +53,7 @@ var (
 )
 
 func (app *appEnv) notFound(w http.ResponseWriter, r *http.Request) {
-	app.errorResponse(r.Context(), w, resperr.NotFound(r))
+	app.replyErr(w, r, resperr.NotFound(r))
 }
 
 func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=60")
 	b, err := httputil.DumpRequest(r, true)
 	if err != nil {
-		app.errorResponse(r.Context(), w, err)
+		app.replyErr(w, r, err)
 		return
 	}
 
@@ -76,7 +76,7 @@ func (app *appEnv) pingErr(w http.ResponseWriter, r *http.Request) {
 	statusCode, _ := strconv.Atoi(code)
 	app.Printf("start pingErr %q", code)
 
-	app.errorResponse(r.Context(), w, resperr.WithStatusCode(errPing, statusCode))
+	app.replyErr(w, r, resperr.WithStatusCode(errPing, statusCode))
 }
 
 func (app *appEnv) postAddContact(w http.ResponseWriter, r *http.Request) {
@@ -111,24 +111,24 @@ func (app *appEnv) getListSubs(w http.ResponseWriter, r *http.Request) {
 	app.Printf("start getListSubs")
 	emailB64 := chi.URLParamFromCtx(r.Context(), "email")
 	if emailB64 == "" {
-		app.errorResponse(r.Context(), w, resperr.New(
+		app.replyErr(w, r, resperr.New(
 			http.StatusBadRequest, "no parameters supplied",
 		))
 		return
 	}
 	emailBytes, err := base64.URLEncoding.DecodeString(emailB64)
 	if err != nil {
-		app.errorResponse(r.Context(), w, resperr.New(
+		app.replyErr(w, r, resperr.New(
 			http.StatusBadRequest, "could not decode request",
 		))
 		return
 	}
 	user, err := app.listSubscriptions(r.Context(), string(emailBytes))
 	if err != nil {
-		app.errorResponse(r.Context(), w, err)
+		app.replyErr(w, r, err)
 		return
 	}
-	app.jsonResponse(r.Context(), http.StatusOK, w, user)
+	app.replyJSON(w, r, http.StatusOK, user)
 }
 
 func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
@@ -136,13 +136,13 @@ func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
 
 	var userData contactData
 	if err := httpjson.DecodeRequest(w, r, &userData); err != nil {
-		app.errorResponse(r.Context(), w, resperr.New(
+		app.replyErr(w, r, resperr.New(
 			http.StatusBadRequest, "could not decode request: %w", err,
 		))
 		return
 	}
 	if userData.Email == "" {
-		app.errorResponse(r.Context(), w, resperr.New(
+		app.replyErr(w, r, resperr.New(
 			http.StatusBadRequest, "no email provided",
 		))
 		return
@@ -150,8 +150,8 @@ func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
 	if err := app.updateSubscriptions(
 		r.Context(), userData.FirstName, userData.LastName, userData.Email, userData.FIPSCodes,
 	); err != nil {
-		app.errorResponse(r.Context(), w, err)
+		app.replyErr(w, r, err)
 		return
 	}
-	app.jsonResponse(r.Context(), http.StatusOK, w, "OK")
+	app.replyJSON(w, r, http.StatusOK, "OK")
 }
