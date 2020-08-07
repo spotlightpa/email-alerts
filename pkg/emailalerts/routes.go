@@ -12,19 +12,28 @@ import (
 	"github.com/carlmjohnson/resperr"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 	"github.com/spotlightpa/email-alerts/pkg/httpjson"
 )
 
 func (app *appEnv) routes() http.Handler {
 	r := chi.NewRouter()
+	origin := "https://*.spotlightpa.org"
 	if app.isLambda() {
 		r.Use(middleware.RequestID)
 	} else {
 		r.Use(middleware.Recoverer)
+		origin = "*"
 	}
 	r.Use(middleware.RealIP)
 	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
 	r.Use(app.versionMiddleware)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{origin},
+		AllowedHeaders: []string{"*"},
+		AllowedMethods: []string{http.MethodGet, http.MethodPost},
+		MaxAge:         300,
+	}))
 	r.Get("/api/healthcheck", app.ping)
 	r.Get(`/api/healthcheck/{code:\d{3}}`, app.pingErr)
 	r.Post(`/api/add-contact`, app.postAddContact)

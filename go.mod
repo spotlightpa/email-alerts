@@ -10,6 +10,7 @@ require (
 	github.com/carlmjohnson/resperr v0.20.4
 	github.com/getsentry/sentry-go v0.7.0
 	github.com/go-chi/chi v4.1.2+incompatible
+	github.com/go-chi/cors v1.1.1
 	github.com/kr/pretty v0.2.0 // indirect
 	github.com/peterbourgon/ff/v3 v3.0.0
 	github.com/tj/assert v0.0.0-20190920132354-ee03d75cd160 // indirect
