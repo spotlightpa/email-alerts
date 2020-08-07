@@ -141,15 +141,13 @@ func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
 		))
 		return
 	}
-	if userData.Email == "" {
+	if userData.ID == "" {
 		app.replyErr(w, r, resperr.New(
-			http.StatusBadRequest, "no email provided",
+			http.StatusBadRequest, "no ID provided",
 		))
 		return
 	}
-	if err := app.updateSubscriptions(
-		r.Context(), userData.FirstName, userData.LastName, userData.Email, userData.FIPSCodes,
-	); err != nil {
+	if err := app.updateSubscriptions(r.Context(), userData); err != nil {
 		app.replyErr(w, r, err)
 		return
 	}
