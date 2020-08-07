@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	AddContactsURL = "https://api.sendgrid.com/v3/marketing/contacts"
-	SendURL        = "https://api.sendgrid.com/v3/mail/send"
+	AddContactsURL        = "https://api.sendgrid.com/v3/marketing/contacts"
+	SendURL               = "https://api.sendgrid.com/v3/mail/send"
+	RemoveUserFromListURL = "https://api.sendgrid.com/v3/marketing/lists/%s/contacts?contact_ids=%s"
+	SearchForUserURL      = "https://api.sendgrid.com/v3/marketing/contacts/search"
 )
 
 type Logger interface {
@@ -41,7 +43,7 @@ func NewClient(token string) *http.Client {
 		fmt.Sprintf("Bearer %s", token),
 		http.DefaultTransport,
 	}
-	cl.Timeout = 5 * time.Second
+	cl.Timeout = 8 * time.Second
 	return cl
 }
 
@@ -57,7 +59,9 @@ func (rt roundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	r2.Header.Set("Authorization", rt.auth)
 	// Make sure we don't send token somewhere else if it's accidentally used
 	// as a regular client
-	r2.URL.Host = "api.sendgrid.com"
+	if r2.URL.Host != "api.sendgrid.com" {
+		return nil, fmt.Errorf("bad URL for SendGrid client: %v", r2.URL)
+	}
 	return rt.trans.RoundTrip(r2)
 }
 
@@ -97,4 +101,48 @@ type Content struct {
 
 type UnsubGroup struct {
 	ID int `json:"group_id"`
+}
+
+func BuildSearchQuery(email string) interface{} {
+	query := fmt.Sprintf("email LIKE '%s'",
+		strings.ReplaceAll(email, "'", `\'`))
+	return struct {
+		Query string `json:"query"`
+	}{
+		Query: query,
+	}
+}
+
+type SearchQueryResults struct {
+	SearchResults []SearchResult `json:"result"`
+	ContactCount  int            `json:"contact_count"`
+	Metadata      struct {
+		Self string `json:"self"`
+	} `json:"_metadata"`
+}
+
+type SearchResult struct {
+	AddressLine1        string            `json:"address_line_1"`
+	AddressLine2        string            `json:"address_line_2"`
+	AlternateEmails     []string          `json:"alternate_emails"`
+	City                string            `json:"city"`
+	Country             string            `json:"country"`
+	Email               string            `json:"email"`
+	FirstName           string            `json:"first_name"`
+	ID                  string            `json:"id"`
+	LastName            string            `json:"last_name"`
+	ListIDs             []string          `json:"list_ids"`
+	PostalCode          string            `json:"postal_code"`
+	StateProvinceRegion string            `json:"state_province_region"`
+	PhoneNumber         string            `json:"phone_number"`
+	Whatsapp            string            `json:"whatsapp"`
+	Line                string            `json:"line"`
+	Facebook            string            `json:"facebook"`
+	UniqueName          string            `json:"unique_name"`
+	CustomFields        map[string]string `json:"custom_fields"`
+	CreatedAt           time.Time         `json:"created_at"`
+	UpdatedAt           time.Time         `json:"updated_at"`
+	Metadata            struct {
+		Self string `json:"self"`
+	} `json:"_metadata"`
 }

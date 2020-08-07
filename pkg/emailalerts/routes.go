@@ -1,6 +1,7 @@
 package emailalerts
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -11,6 +12,7 @@ import (
 	"github.com/carlmjohnson/resperr"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/spotlightpa/email-alerts/pkg/httpjson"
 )
 
 func (app *appEnv) routes() http.Handler {
@@ -26,6 +28,8 @@ func (app *appEnv) routes() http.Handler {
 	r.Get("/api/healthcheck", app.ping)
 	r.Get(`/api/healthcheck/{code:\d{3}}`, app.pingErr)
 	r.Post(`/api/add-contact`, app.postAddContact)
+	r.Get(`/api/list-subscriptions/{email}`, app.getListSubs)
+	r.Post(`/api/update-subscriptions`, app.postUpdateSubs)
 	if app.isLambda() {
 		r.NotFound(app.notFound)
 	} else {
@@ -92,4 +96,62 @@ func validateRedirect(formVal, fallback string) string {
 		}
 	}
 	return fallback
+}
+
+func (app *appEnv) getListSubs(w http.ResponseWriter, r *http.Request) {
+	app.Printf("start getListSubs")
+	emailB64 := chi.URLParamFromCtx(r.Context(), "email")
+	if emailB64 == "" {
+		app.errorResponse(r.Context(), w, resperr.New(
+			http.StatusBadRequest, "no parameters supplied",
+		))
+		return
+	}
+	emailBytes, err := base64.URLEncoding.DecodeString(emailB64)
+	if err != nil {
+		app.errorResponse(r.Context(), w, resperr.New(
+			http.StatusBadRequest, "could not decode request",
+		))
+		return
+	}
+	_, codes, err := app.listSubscriptions(r.Context(), string(emailBytes))
+	if err != nil {
+		app.errorResponse(r.Context(), w, err)
+		return
+	}
+	app.jsonResponse(r.Context(), http.StatusOK, w, struct {
+		Codes []string `json:"fips_codes"`
+	}{
+		Codes: codes,
+	})
+}
+
+func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
+	app.Printf("start postUpdateSubs")
+
+	var userData struct {
+		Email     string   `json:"email"`
+		FirstName string   `json:"first_name"`
+		LastName  string   `json:"last_name"`
+		FIPSCodes []string `json:"fips_codes"`
+	}
+	if err := httpjson.DecodeRequest(w, r, &userData); err != nil {
+		app.errorResponse(r.Context(), w, resperr.New(
+			http.StatusBadRequest, "could not decode request: %w", err,
+		))
+		return
+	}
+	if userData.Email == "" {
+		app.errorResponse(r.Context(), w, resperr.New(
+			http.StatusBadRequest, "no email provided",
+		))
+		return
+	}
+	if err := app.updateSubscriptions(
+		r.Context(), userData.FirstName, userData.LastName, userData.Email, userData.FIPSCodes,
+	); err != nil {
+		app.errorResponse(r.Context(), w, err)
+		return
+	}
+	app.jsonResponse(r.Context(), http.StatusOK, w, "OK")
 }
