@@ -123,27 +123,18 @@ func (app *appEnv) getListSubs(w http.ResponseWriter, r *http.Request) {
 		))
 		return
 	}
-	_, codes, err := app.listSubscriptions(r.Context(), string(emailBytes))
+	user, err := app.listSubscriptions(r.Context(), string(emailBytes))
 	if err != nil {
 		app.errorResponse(r.Context(), w, err)
 		return
 	}
-	app.jsonResponse(r.Context(), http.StatusOK, w, struct {
-		Codes []string `json:"fips_codes"`
-	}{
-		Codes: codes,
-	})
+	app.jsonResponse(r.Context(), http.StatusOK, w, user)
 }
 
 func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
 	app.Printf("start postUpdateSubs")
 
-	var userData struct {
-		Email     string   `json:"email"`
-		FirstName string   `json:"first_name"`
-		LastName  string   `json:"last_name"`
-		FIPSCodes []string `json:"fips_codes"`
-	}
+	var userData contactData
 	if err := httpjson.DecodeRequest(w, r, &userData); err != nil {
 		app.errorResponse(r.Context(), w, resperr.New(
 			http.StatusBadRequest, "could not decode request: %w", err,

@@ -68,7 +68,15 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 	return postJSON(ctx, app.sg, sendgrid.SendURL, data)
 }
 
-func (app *appEnv) listSubscriptions(ctx context.Context, email string) (userID string, fipsCodes []string, err error) {
+type contactData struct {
+	ID        string   `json:"-"`
+	Email     string   `json:"email"`
+	FirstName string   `json:"first_name"`
+	LastName  string   `json:"last_name"`
+	FIPSCodes []string `json:"fips_codes"`
+}
+
+func (app *appEnv) listSubscriptions(ctx context.Context, email string) (contact *contactData, err error) {
 
 	var searchResp sendgrid.SearchQueryResults
 	if err = httpjson.Post(
@@ -76,34 +84,40 @@ func (app *appEnv) listSubscriptions(ctx context.Context, email string) (userID 
 		sendgrid.BuildSearchQuery(email),
 		&searchResp,
 	); err != nil {
-		return "", nil, err
+		return nil, err
 	}
 	if n := len(searchResp.SearchResults); n == 0 {
-		return "", nil, resperr.New(
+		return nil, resperr.New(
 			http.StatusNotFound,
 			"could not find user %q", email)
 	} else if n != 1 {
-		return "", nil, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"wrong number of users found for email %q %d != 1",
 			email, n)
 	}
-	userID = searchResp.SearchResults[0].ID
+	user := searchResp.SearchResults[0]
+	contact = &contactData{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+	}
 	listIDs := searchResp.SearchResults[0].ListIDs
-	fipsCodes = make([]string, 0, len(listIDs))
+	contact.FIPSCodes = make([]string, 0, len(listIDs))
 	for _, listID := range listIDs {
 		if fipsCode := listToFIPS[listID].FIPS; fipsCode != "" {
-			fipsCodes = append(fipsCodes, fipsCode)
+			contact.FIPSCodes = append(contact.FIPSCodes, fipsCode)
 		}
 	}
 	return
 }
 
 func (app *appEnv) updateSubscriptions(ctx context.Context, first, last, email string, fipsCodes []string) error {
-	userID, currentCodes, err := app.listSubscriptions(ctx, email)
+	user, err := app.listSubscriptions(ctx, email)
 	if err != nil {
 		return err
 	}
-	_, codesToRemove := symDiff(currentCodes, fipsCodes)
+	_, codesToRemove := symDiff(user.FIPSCodes, fipsCodes)
 	for _, code := range codesToRemove {
 		listID := fipsToList[code].ID
 		if listID == "" {
@@ -111,7 +125,7 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, first, last, email s
 		}
 		if err = httpjson.Delete(
 			ctx, app.sg,
-			fmt.Sprintf(sendgrid.RemoveUserFromListURL, listID, userID),
+			fmt.Sprintf(sendgrid.RemoveUserFromListURL, listID, user.ID),
 			nil,
 			http.StatusAccepted,
 		); err != nil {
