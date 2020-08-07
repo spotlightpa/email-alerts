@@ -10,9 +10,10 @@ import (
 
 const (
 	AddContactsURL        = "https://api.sendgrid.com/v3/marketing/contacts"
-	SendURL               = "https://api.sendgrid.com/v3/mail/send"
 	RemoveUserFromListURL = "https://api.sendgrid.com/v3/marketing/lists/%s/contacts?contact_ids=%s"
 	SearchForUserURL      = "https://api.sendgrid.com/v3/marketing/contacts/search"
+	SendURL               = "https://api.sendgrid.com/v3/mail/send"
+	UserByIDURL           = "https://api.sendgrid.com/v3/marketing/contacts/%s"
 )
 
 type Logger interface {
@@ -114,14 +115,14 @@ func BuildSearchQuery(email string) interface{} {
 }
 
 type SearchQueryResults struct {
-	SearchResults []SearchResult `json:"result"`
-	ContactCount  int            `json:"contact_count"`
+	SearchResults []UserInfo `json:"result"`
+	ContactCount  int        `json:"contact_count"`
 	Metadata      struct {
 		Self string `json:"self"`
 	} `json:"_metadata"`
 }
 
-type SearchResult struct {
+type UserInfo struct {
 	AddressLine1        string            `json:"address_line_1"`
 	AddressLine2        string            `json:"address_line_2"`
 	AlternateEmails     []string          `json:"alternate_emails"`

@@ -69,7 +69,7 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 }
 
 type contactData struct {
-	ID        string   `json:"-"`
+	ID        string   `json:"id"`
 	Email     string   `json:"email"`
 	FirstName string   `json:"first_name"`
 	LastName  string   `json:"last_name"`
@@ -101,29 +101,38 @@ func (app *appEnv) listSubscriptions(ctx context.Context, email string) (contact
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,
-	}
-	listIDs := searchResp.SearchResults[0].ListIDs
-	contact.FIPSCodes = make([]string, 0, len(listIDs))
-	for _, listID := range listIDs {
-		if fipsCode := listToFIPS[listID].FIPS; fipsCode != "" {
-			contact.FIPSCodes = append(contact.FIPSCodes, fipsCode)
-		}
+		FIPSCodes: listIDsToFIPS(searchResp.SearchResults[0].ListIDs),
 	}
 	return
 }
 
-func (app *appEnv) updateSubscriptions(ctx context.Context, first, last, email string, fipsCodes []string) error {
-	user, err := app.listSubscriptions(ctx, email)
-	if err != nil {
+func listIDsToFIPS(listIDs []string) []string {
+	fipsCodes := make([]string, 0, len(listIDs))
+	for _, listID := range listIDs {
+		if fipsCode := listToFIPS[listID].FIPS; fipsCode != "" {
+			fipsCodes = append(fipsCodes, fipsCode)
+		}
+	}
+	return fipsCodes
+}
+
+func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) error {
+	var info sendgrid.UserInfo
+	if err := httpjson.Get(
+		ctx, app.sg,
+		fmt.Sprintf(sendgrid.UserByIDURL, user.ID),
+		&info,
+	); err != nil {
 		return err
 	}
-	_, codesToRemove := symDiff(user.FIPSCodes, fipsCodes)
+	oldFIPSCodes := listIDsToFIPS(info.ListIDs)
+	_, codesToRemove := symDiff(user.FIPSCodes, oldFIPSCodes)
 	for _, code := range codesToRemove {
 		listID := fipsToList[code].ID
 		if listID == "" {
 			continue
 		}
-		if err = httpjson.Delete(
+		if err := httpjson.Delete(
 			ctx, app.sg,
 			fmt.Sprintf(sendgrid.RemoveUserFromListURL, listID, user.ID),
 			nil,
@@ -132,8 +141,8 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, first, last, email s
 			return err
 		}
 	}
-	listIDs := make([]string, 0, len(fipsCodes))
-	for _, code := range fipsCodes {
+	listIDs := make([]string, 0, len(oldFIPSCodes))
+	for _, code := range oldFIPSCodes {
 		id := fipsToList[code].ID
 		if id == "" {
 			continue
@@ -146,9 +155,9 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, first, last, email s
 	data := sendgrid.AddContactsRequest{
 		ListIds: listIDs,
 		Contacts: []sendgrid.Contact{{
-			FirstName: first,
-			LastName:  last,
-			Email:     email,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
 		}},
 	}
 	if err := httpjson.Put(
