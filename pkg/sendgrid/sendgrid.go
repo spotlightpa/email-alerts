@@ -105,8 +105,8 @@ type UnsubGroup struct {
 }
 
 func BuildSearchQuery(email string) interface{} {
-	query := fmt.Sprintf("email LIKE '%s'",
-		strings.ReplaceAll(email, "'", `\'`))
+	query := fmt.Sprintf("email = '%s'",
+		strings.ToLower(strings.ReplaceAll(email, "'", ``)))
 	return struct {
 		Query string `json:"query"`
 	}{
