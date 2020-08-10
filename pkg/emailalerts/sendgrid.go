@@ -105,7 +105,7 @@ func (app *appEnv) listSubscriptions(ctx context.Context, email string) (contact
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,
-		FIPSCodes: listIDsToFIPS(searchResp.SearchResults[0].ListIDs),
+		FIPSCodes: listIDsToFIPS(user.ListIDs),
 	}
 	return
 }
@@ -120,6 +120,18 @@ func listIDsToFIPS(listIDs []string) []string {
 	return fipsCodes
 }
 
+func fipsCodesToListIDs(fipsCodes []string) []string {
+	listIDs := make([]string, 0, len(fipsCodes))
+	for _, code := range fipsCodes {
+		id := fipsToList[code].ID
+		if id == "" {
+			continue
+		}
+		listIDs = append(listIDs, id)
+	}
+	return listIDs
+}
+
 func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) error {
 	var info sendgrid.UserInfo
 	if err := httpjson.Get(
@@ -131,11 +143,8 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) er
 	}
 	oldFIPSCodes := listIDsToFIPS(info.ListIDs)
 	_, codesToRemove := symDiff(user.FIPSCodes, oldFIPSCodes)
-	for _, code := range codesToRemove {
-		listID := fipsToList[code].ID
-		if listID == "" {
-			continue
-		}
+	listIDsToRemove := fipsCodesToListIDs(codesToRemove)
+	for _, listID := range listIDsToRemove {
 		if err := httpjson.Delete(
 			ctx, app.sg,
 			fmt.Sprintf(sendgrid.RemoveUserFromListURL, listID, user.ID),
@@ -145,19 +154,11 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) er
 			return err
 		}
 	}
-	listIDs := make([]string, 0, len(oldFIPSCodes))
-	for _, code := range oldFIPSCodes {
-		id := fipsToList[code].ID
-		if id == "" {
-			continue
-		}
-		listIDs = append(listIDs, id)
-	}
 	// Post this even if there are no IDs to update the username.
 	// Posting all IDs, not just new ones because there may be stale data,
 	// so we can't trust it.
 	data := sendgrid.AddContactsRequest{
-		ListIds: listIDs,
+		ListIds: fipsCodesToListIDs(user.FIPSCodes),
 		Contacts: []sendgrid.Contact{{
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
