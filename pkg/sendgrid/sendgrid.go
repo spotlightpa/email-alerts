@@ -104,9 +104,15 @@ type UnsubGroup struct {
 	ID int `json:"group_id"`
 }
 
+func SGQLEscape(s string) string {
+	return strings.ReplaceAll(
+		strings.ReplaceAll(s, `\`, `\\`),
+		`'`, `\'`)
+}
+
 func BuildSearchQuery(email string) interface{} {
 	query := fmt.Sprintf("email = '%s'",
-		strings.ToLower(strings.ReplaceAll(email, "'", ``)))
+		strings.ToLower(SGQLEscape(email)))
 	return struct {
 		Query string `json:"query"`
 	}{
