@@ -70,7 +70,7 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 			ID: AlertsUnsubGroupID,
 		},
 	}
-	return httpjson.Put(ctx, app.sg, sendgrid.EndpointSend, data, nil)
+	return httpjson.Post(ctx, app.sg, sendgrid.EndpointSend, data, nil)
 }
 
 type contactData struct {
