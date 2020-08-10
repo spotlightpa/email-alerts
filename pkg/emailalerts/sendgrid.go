@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/carlmjohnson/emailx"
 	"github.com/carlmjohnson/resperr"
 	"github.com/spotlightpa/email-alerts/pkg/httpjson"
 	"github.com/spotlightpa/email-alerts/pkg/sendgrid"
 )
 
 func (app *appEnv) addContact(ctx context.Context, first, last, email string, fipsCodes []string) error {
-	if !strings.Contains(email, "@") {
+	if !emailx.Valid(email) {
 		return fmt.Errorf("invalid email: %q", email)
 	}
 	if len(fipsCodes) < 1 {
@@ -77,7 +78,10 @@ type contactData struct {
 }
 
 func (app *appEnv) listSubscriptions(ctx context.Context, email string) (contact *contactData, err error) {
-
+	if !emailx.Valid(email) {
+		return nil, resperr.New(
+			http.StatusBadRequest, "invalid email %q", email)
+	}
 	var searchResp sendgrid.SearchQueryResults
 	if err = httpjson.Post(
 		ctx, app.sg, sendgrid.SearchForUserURL,

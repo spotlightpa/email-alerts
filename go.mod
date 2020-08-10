@@ -4,6 +4,7 @@ go 1.13
 
 require (
 	github.com/aws/aws-lambda-go v1.17.0 // indirect
+	github.com/carlmjohnson/emailx v0.20.2
 	github.com/carlmjohnson/exitcode v0.0.4
 	github.com/carlmjohnson/flagext v0.0.11
 	github.com/carlmjohnson/gateway v1.20.6

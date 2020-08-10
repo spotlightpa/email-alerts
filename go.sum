@@ -11,6 +11,8 @@ github.com/aws/aws-lambda-go v1.11.1/go.mod h1:Rr2SMTLeSMKgD45uep9V/NP8tnbCcySgu
 github.com/aws/aws-lambda-go v1.17.0 h1:Ogihmi8BnpmCNktKAGpNwSiILNNING1MiosnKUfU8m0=
 github.com/aws/aws-lambda-go v1.17.0/go.mod h1:FEwgPLE6+8wcGBTe5cJN3JWurd1Ztm9zN4jsXsjzKKw=
 github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible/go.mod h1:osfaiScAUVup+UC9Nfq76eWqDhXlp+4UYaA8uhTBO6g=
+github.com/carlmjohnson/emailx v0.20.2 h1:0euWTGWnz5zwxXaDwLjP/egV7kACYGUvO5Wqu/5RqL0=
+github.com/carlmjohnson/emailx v0.20.2/go.mod h1:Lngztj3awUX1Zu5b0Jv9ety36JBRKYvwlkFgem+0K+Q=
 github.com/carlmjohnson/exitcode v0.0.4 h1:C5c0GBs/1iuo5cKIHBHdBQVENeAmgPZcyXtqBKCe5i0=
 github.com/carlmjohnson/exitcode v0.0.4/go.mod h1:MZ6ThCDx517DQcrpYnnns1pLh8onjFl+B/AsrOrdmpc=
 github.com/carlmjohnson/flagext v0.0.11 h1:k2K/FCzmfdoYsDLZpHw8w/+V2Rt5gRgCXEfR4Y3d2K4=
