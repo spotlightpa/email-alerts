@@ -136,9 +136,7 @@ func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
 
 	var userData contactData
 	if err := httpjson.DecodeRequest(w, r, &userData); err != nil {
-		app.replyErr(w, r, resperr.New(
-			http.StatusBadRequest, "could not decode request: %w", err,
-		))
+		app.replyErr(w, r, err)
 		return
 	}
 	if userData.ID == "" {
