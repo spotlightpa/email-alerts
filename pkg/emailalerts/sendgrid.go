@@ -164,7 +164,9 @@ func fipsCodesToListIDs(fipsCodes []string) []string {
 }
 
 func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) error {
+	app.Printf("update user: %q", user.Email)
 	if user.Unsubscribed {
+		app.Printf("unsubscribe: %v", user.Email)
 		return app.unsubscribe(ctx, user.Email)
 	}
 
@@ -177,7 +179,8 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) er
 		return err
 	}
 	oldFIPSCodes := listIDsToFIPS(info.ListIDs)
-	_, codesToRemove := symDiff(user.FIPSCodes, oldFIPSCodes)
+	_, codesToRemove := symDiff(oldFIPSCodes, user.FIPSCodes)
+	app.Printf("removing: %v", codesToRemove)
 	listIDsToRemove := fipsCodesToListIDs(codesToRemove)
 	for _, listID := range listIDsToRemove {
 		if err := httpjson.Delete(
@@ -189,6 +192,7 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) er
 			return err
 		}
 	}
+	app.Printf("adding: %v", user.FIPSCodes)
 	// Post this even if there are no IDs to update the username.
 	// Posting all IDs, not just new ones because there may be stale data,
 	// so we can't trust it.
