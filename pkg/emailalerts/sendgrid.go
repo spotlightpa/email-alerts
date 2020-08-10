@@ -38,7 +38,11 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 			Email:     email,
 		}},
 	}
-	if err := putJSON(ctx, app.sg, sendgrid.EndpointAddContacts, data); err != nil {
+	if err := httpjson.Put(
+		ctx, app.sg, sendgrid.EndpointAddContacts,
+		data,
+		nil,
+	); err != nil {
 		return err
 	}
 	data = sendgrid.SendRequest{
@@ -63,10 +67,10 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 		},
 		TemplateID: "d-375d4ead8f99430d9ed1a674dd40ffa0",
 		UnsubGroup: sendgrid.UnsubGroup{
-			ID: 13641,
+			ID: AlertsUnsubGroupID,
 		},
 	}
-	return postJSON(ctx, app.sg, sendgrid.EndpointSend, data)
+	return httpjson.Put(ctx, app.sg, sendgrid.EndpointSend, data, nil)
 }
 
 type contactData struct {
