@@ -38,7 +38,7 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 			Email:     email,
 		}},
 	}
-	if err := putJSON(ctx, app.sg, sendgrid.AddContactsURL, data); err != nil {
+	if err := putJSON(ctx, app.sg, sendgrid.EndpointAddContacts, data); err != nil {
 		return err
 	}
 	data = sendgrid.SendRequest{
@@ -66,15 +66,16 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 			ID: 13641,
 		},
 	}
-	return postJSON(ctx, app.sg, sendgrid.SendURL, data)
+	return postJSON(ctx, app.sg, sendgrid.EndpointSend, data)
 }
 
 type contactData struct {
-	ID        string   `json:"id"`
-	Email     string   `json:"email"`
-	FirstName string   `json:"first_name"`
-	LastName  string   `json:"last_name"`
-	FIPSCodes []string `json:"fips_codes"`
+	ID           string   `json:"id"`
+	Email        string   `json:"email"`
+	FirstName    string   `json:"first_name"`
+	LastName     string   `json:"last_name"`
+	FIPSCodes    []string `json:"fips_codes"`
+	Unsubscribed bool     `json:"unsubscribed"`
 }
 
 func (app *appEnv) listSubscriptions(ctx context.Context, email string) (contact *contactData, err error) {
@@ -84,7 +85,7 @@ func (app *appEnv) listSubscriptions(ctx context.Context, email string) (contact
 	}
 	var searchResp sendgrid.SearchQueryResults
 	if err = httpjson.Post(
-		ctx, app.sg, sendgrid.SearchForUserURL,
+		ctx, app.sg, sendgrid.EndpointSearchForUser,
 		sendgrid.BuildSearchQuery(email),
 		&searchResp,
 	); err != nil {
@@ -99,15 +100,41 @@ func (app *appEnv) listSubscriptions(ctx context.Context, email string) (contact
 			"wrong number of users found for email %q %d != 1",
 			email, n)
 	}
+
+	unsub, err := app.isUnsubscribed(ctx, email)
+	if err != nil {
+		return nil, err
+	}
+
 	user := searchResp.SearchResults[0]
 	contact = &contactData{
-		ID:        user.ID,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		Email:     user.Email,
-		FIPSCodes: listIDsToFIPS(user.ListIDs),
+		ID:           user.ID,
+		FirstName:    user.FirstName,
+		LastName:     user.LastName,
+		Email:        user.Email,
+		FIPSCodes:    listIDsToFIPS(user.ListIDs),
+		Unsubscribed: unsub,
 	}
 	return
+}
+
+const AlertsUnsubGroupID = 13641
+
+func (app *appEnv) isUnsubscribed(ctx context.Context, email string) (unsubscribed bool, err error) {
+	var unsub sendgrid.UnsubscribeGroupsResponse
+	if err = httpjson.Get(
+		ctx, app.sg,
+		fmt.Sprintf(sendgrid.EndpointUnsubscribeGroupsByEmail, email),
+		&unsub,
+	); err != nil {
+		return false, err
+	}
+	for _, group := range unsub.Suppressions {
+		if group.ID == AlertsUnsubGroupID {
+			return group.IsUnsubscribed, nil
+		}
+	}
+	return false, fmt.Errorf("unsubscribe group not found")
 }
 
 func listIDsToFIPS(listIDs []string) []string {
@@ -133,10 +160,14 @@ func fipsCodesToListIDs(fipsCodes []string) []string {
 }
 
 func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) error {
+	if user.Unsubscribed {
+		return app.unsubscribe(ctx, user.Email)
+	}
+
 	var info sendgrid.UserInfo
 	if err := httpjson.Get(
 		ctx, app.sg,
-		fmt.Sprintf(sendgrid.UserByIDURL, user.ID),
+		fmt.Sprintf(sendgrid.EndpointUserByID, user.ID),
 		&info,
 	); err != nil {
 		return err
@@ -147,7 +178,7 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) er
 	for _, listID := range listIDsToRemove {
 		if err := httpjson.Delete(
 			ctx, app.sg,
-			fmt.Sprintf(sendgrid.RemoveUserFromListURL, listID, user.ID),
+			fmt.Sprintf(sendgrid.EndpointRemoveUserFromList, listID, user.ID),
 			nil,
 			http.StatusAccepted,
 		); err != nil {
@@ -166,9 +197,36 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) er
 		}},
 	}
 	if err := httpjson.Put(
-		ctx, app.sg, sendgrid.AddContactsURL, data, nil,
+		ctx, app.sg, sendgrid.EndpointAddContacts, data, nil,
 	); err != nil {
 		return err
 	}
+	if err := httpjson.Delete(
+		ctx, app.sg, fmt.Sprintf(
+			sendgrid.EndpointRemoveFromUnsubscribeGroup,
+			AlertsUnsubGroupID,
+			user.Email,
+		),
+		nil,
+		http.StatusNoContent,
+	); err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (app *appEnv) unsubscribe(ctx context.Context, email string) error {
+	return httpjson.Post(
+		ctx, app.sg,
+		fmt.Sprintf(
+			sendgrid.EndpointAddToUnsubscribeGroup,
+			AlertsUnsubGroupID,
+		),
+		sendgrid.UnsubscribeGroupAddRequest{
+			EmailAddresses: []string{email},
+		},
+		nil,
+		http.StatusCreated,
+	)
 }

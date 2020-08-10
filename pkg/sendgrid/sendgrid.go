@@ -9,11 +9,14 @@ import (
 )
 
 const (
-	AddContactsURL        = "https://api.sendgrid.com/v3/marketing/contacts"
-	RemoveUserFromListURL = "https://api.sendgrid.com/v3/marketing/lists/%s/contacts?contact_ids=%s"
-	SearchForUserURL      = "https://api.sendgrid.com/v3/marketing/contacts/search"
-	SendURL               = "https://api.sendgrid.com/v3/mail/send"
-	UserByIDURL           = "https://api.sendgrid.com/v3/marketing/contacts/%s"
+	EndpointAddContacts                = "https://api.sendgrid.com/v3/marketing/contacts"
+	EndpointRemoveUserFromList         = "https://api.sendgrid.com/v3/marketing/lists/%s/contacts?contact_ids=%s"
+	EndpointSearchForUser              = "https://api.sendgrid.com/v3/marketing/contacts/search"
+	EndpointSend                       = "https://api.sendgrid.com/v3/mail/send"
+	EndpointUserByID                   = "https://api.sendgrid.com/v3/marketing/contacts/%s"
+	EndpointUnsubscribeGroupsByEmail   = "https://api.sendgrid.com/v3/asm/suppressions/%s"
+	EndpointAddToUnsubscribeGroup      = "https://api.sendgrid.com/v3/asm/groups/%d/suppressions"
+	EndpointRemoveFromUnsubscribeGroup = "https://api.sendgrid.com/v3/asm/groups/%d/suppressions/%s"
 )
 
 type Logger interface {
@@ -152,4 +155,20 @@ type UserInfo struct {
 	Metadata            struct {
 		Self string `json:"self"`
 	} `json:"_metadata"`
+}
+
+type UnsubscribeGroupsResponse struct {
+	Suppressions []SuppressionInfo `json:"suppressions"`
+}
+
+type SuppressionInfo struct {
+	Name           string `json:"name"`
+	ID             int    `json:"id"`
+	Description    string `json:"description"`
+	IsDefault      bool   `json:"is_default"`
+	IsUnsubscribed bool   `json:"suppressed"`
+}
+
+type UnsubscribeGroupAddRequest struct {
+	EmailAddresses []string `json:"recipient_emails"`
 }
