@@ -154,8 +154,8 @@ func (app *appEnv) updateSubscriptions(ctx context.Context, user contactData) er
 		listIDs = append(listIDs, id)
 	}
 	// Post this even if there are no IDs to update the username.
-	// Posting all IDs, not just new ones because the search endpoint
-	// returns stale data, so we can't trust it.
+	// Posting all IDs, not just new ones because there may be stale data,
+	// so we can't trust it.
 	data := sendgrid.AddContactsRequest{
 		ListIds: listIDs,
 		Contacts: []sendgrid.Contact{{
