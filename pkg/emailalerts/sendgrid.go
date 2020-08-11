@@ -55,6 +55,7 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 				"first":  first,
 				"last":   last,
 				"county": strings.Join(counties, " / "),
+				"email":  email,
 			},
 		}},
 		From: sendgrid.Address{
