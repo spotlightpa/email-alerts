@@ -43,7 +43,7 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 		data,
 		nil,
 	); err != nil {
-		return err
+		return fmt.Errorf("error adding contact to SendGrid: %w", err)
 	}
 	data = sendgrid.SendRequest{
 		Personalizations: []sendgrid.Personalization{{
