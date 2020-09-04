@@ -39,7 +39,7 @@ type PutUserResponse struct {
 	SignUpAt          json.RawMessage        `json:"timestamp_signup"`
 	UniqueEmailID     string                 `json:"unique_email_id"`
 	UnsubscribeReason string                 `json:"unsubscribe_reason"`
-	Vip               bool                   `json:"vip"`
+	VIP               bool                   `json:"vip"`
 	WebID             int                    `json:"web_id"`
 }
 
