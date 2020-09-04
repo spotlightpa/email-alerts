@@ -213,6 +213,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		Status:       "subscribed",
 		MergeFields:  mergeFields,
 		Interests:    interests,
+		IPOpt:        r.RemoteAddr,
 	}); err != nil {
 		app.redirectErr(w, r, err)
 		return
