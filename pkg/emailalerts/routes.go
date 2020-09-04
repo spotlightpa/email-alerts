@@ -154,7 +154,7 @@ func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request) {
-	app.Printf("start postSubInvestigator")
+	app.Printf("start postSubscribeMailchimp")
 
 	if err := r.ParseForm(); err != nil {
 		err = resperr.New(http.StatusBadRequest,
