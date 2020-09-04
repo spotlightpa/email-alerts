@@ -14,6 +14,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/peterbourgon/ff/v3"
+	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 	"github.com/spotlightpa/email-alerts/pkg/sendgrid"
 )
 
@@ -49,6 +50,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 			app.sg = sendgrid.NewClient(token)
 			return nil
 		})
+	getMC := mailchimp.FlagVar(fs)
 	if err := ff.Parse(fs, args, ff.WithEnvVarPrefix("EMAIL_ALERTS")); err != nil {
 		return err
 	}
@@ -56,7 +58,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 	if err := app.initSentry(*sentryDSN); err != nil {
 		return err
 	}
-
+	app.mc = getMC(&http.Client{Timeout: 5 * time.Second})
 	return nil
 }
 
@@ -64,6 +66,7 @@ type appEnv struct {
 	port int
 	l    *log.Logger
 	sg   *http.Client
+	mc   mailchimp.V3
 }
 
 func (app *appEnv) Exec() (err error) {

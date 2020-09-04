@@ -3,7 +3,9 @@ package emailalerts
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/carlmjohnson/resperr"
 	"github.com/getsentry/sentry-go"
@@ -39,6 +41,18 @@ func (app *appEnv) logErr(ctx context.Context, err error) {
 	}
 
 	app.Printf("err: %v", err)
+}
+
+func (app *appEnv) redirectErr(w http.ResponseWriter, r *http.Request, err error) {
+	app.logErr(r.Context(), err)
+
+	sorryURL := validateRedirect(r.FormValue("redirect_sorry"), "/sorry.html")
+	code := resperr.StatusCode(err)
+	msg := resperr.UserMessage(err)
+	sorryURL = fmt.Sprintf("%s?code=%d&msg=%s",
+		sorryURL, code, url.QueryEscape(msg))
+
+	http.Redirect(w, r, sorryURL, http.StatusSeeOther)
 }
 
 func errorResponseFrom(err error) (status int, data interface{}) {
