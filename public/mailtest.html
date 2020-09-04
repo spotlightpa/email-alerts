@@ -1,0 +1,59 @@
+<html>
+  <head>
+  </head>
+  <body>
+    <form action="/api/subscribe" method="post">
+      <input type="hidden" name="redirect_sorry" value="https://www.spotlightpa.org/newsletters/sorry/">
+      <div class="field">
+        <label>
+          <input type="checkbox" name="contact" value="1" tabindex="-1" autocomplete="off">
+          I am a robot
+        </label>
+      </div>
+      <div class="field">
+        <label>
+          <input type="checkbox" name="investigator" value="1" tabindex="-1" autocomplete="off">
+          Investigator
+        </label>
+      </div>
+      <div class="field">
+        <label>
+          <input type="checkbox" name="papost" value="1" tabindex="-1" autocomplete="off">
+          PA Post
+        </label>
+      </div>
+      <div class="field">
+        <label>
+          <input type="checkbox" name="breaking_news" value="1" tabindex="-1" autocomplete="off">
+          Breaking news
+        </label>
+      </div>
+      <div>
+        <label class="label" for="investigator-dropdown-email">
+          Email
+        </label>
+
+          <input id="investigator-dropdown-email" class="input" name="EMAIL" placeholder="" autocomplete="email" >
+      </div>
+      <div class="field">
+        <label class="label" for="investigator-dropdown-fname">
+          First name
+        </label>
+          <input id="investigator-dropdown-fname" class="input" type="text" name="FNAME" placeholder="" autocomplete="given-name" required="">
+      </div>
+      <div class="field">
+        <label class="label" for="investigator-dropdown-lname">
+          Last name
+        </label>
+          <input id="investigator-dropdown-lname" class="input" type="text" name="LNAME" placeholder="" autocomplete="family-name" required="">
+      </div>
+      <div class="field">
+        <p class="control">
+          <button type="submit" class="button is-medium is-danger has-text-weight-semibold is-fullwidth">
+            Sign Up
+          </button>
+        </p>
+      </div>
+    </form>
+  </body>
+</html>

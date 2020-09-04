@@ -9,11 +9,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/carlmjohnson/emailx"
 	"github.com/carlmjohnson/resperr"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+	"github.com/gorilla/schema"
 	"github.com/spotlightpa/email-alerts/pkg/httpjson"
+	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 )
 
 func (app *appEnv) routes() http.Handler {
@@ -39,6 +42,7 @@ func (app *appEnv) routes() http.Handler {
 	r.Post(`/api/add-contact`, app.postAddContact)
 	r.Get(`/api/list-subscriptions/{email}`, app.getListSubs)
 	r.Post(`/api/update-subscriptions`, app.postUpdateSubs)
+	r.Post(`/api/subscribe`, app.postSubscribeMailchimp)
 	if app.isLambda() {
 		r.NotFound(app.notFound)
 	} else {
@@ -87,10 +91,7 @@ func (app *appEnv) postAddContact(w http.ResponseWriter, r *http.Request) {
 	fipsCodes := r.PostForm["fips"]
 
 	if err := app.addContact(r.Context(), first, last, email, fipsCodes); err != nil {
-		app.logErr(r.Context(), err)
-
-		sorryURL := validateRedirect(r.FormValue("redirect_sorry"), "/sorry.html")
-		http.Redirect(w, r, sorryURL, http.StatusSeeOther)
+		app.redirectErr(w, r, err)
 		return
 	}
 	// Allow redirects to .spotlightpa.org
@@ -150,4 +151,72 @@ func (app *appEnv) postUpdateSubs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	app.replyJSON(w, r, http.StatusOK, "OK")
+}
+
+func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request) {
+	app.Printf("start postSubInvestigator")
+
+	if err := r.ParseForm(); err != nil {
+		err = resperr.New(http.StatusBadRequest,
+			"could not parse request: %w", err)
+		app.redirectErr(w, r, err)
+		return
+	}
+
+	decoder := schema.NewDecoder()
+	decoder.IgnoreUnknownKeys(true)
+	var req struct {
+		EmailAddress string `schema:"EMAIL"`
+		FirstName    string `schema:"FNAME"`
+		LastName     string `schema:"LNAME"`
+		Investigator bool   `schema:"investigator"`
+		PAPost       bool   `schema:"papost"`
+		BreakingNews bool   `schema:"breaking_news"`
+		Honeypot     bool   `schema:"contact"`
+	}
+	if err := decoder.Decode(&req, r.PostForm); err != nil {
+		app.redirectErr(w, r, err)
+		return
+	}
+	if !emailx.Valid(req.EmailAddress) {
+		err := resperr.New(http.StatusBadRequest,
+			"invalid email %q", req.EmailAddress)
+		err = resperr.WithUserMessagef(err,
+			"Invalid email address %q.", req.EmailAddress)
+		app.redirectErr(w, r, err)
+		return
+	}
+	if req.Honeypot {
+		err := resperr.New(http.StatusBadRequest,
+			"checked honeypot %q", req.EmailAddress)
+		err = resperr.WithUserMessage(err,
+			"There was a problem with your request")
+		app.redirectErr(w, r, err)
+		return
+	}
+	mergeFields := map[string]string{
+		"FNAME": strings.TrimSpace(req.FirstName),
+		"LNAME": strings.TrimSpace(req.LastName),
+	}
+	removeBlank(mergeFields)
+
+	interests := map[string]bool{
+		"1839fa2e3f": req.Investigator,
+		"eda85eb7dd": req.PAPost,
+		"39b11b47d6": req.BreakingNews,
+	}
+	removeFalse(interests)
+
+	if err := app.mc.PutUser(r.Context(), &mailchimp.PutUserRequest{
+		EmailAddress: emailx.Normalize(req.EmailAddress),
+		StatusIfNew:  "subscribed",
+		Status:       "subscribed",
+		MergeFields:  mergeFields,
+		Interests:    interests,
+	}); err != nil {
+		app.redirectErr(w, r, err)
+		return
+	}
+	dest := validateRedirect(r.FormValue("redirect"), "/thanks.html")
+	http.Redirect(w, r, dest, http.StatusSeeOther)
 }
