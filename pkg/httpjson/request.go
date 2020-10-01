@@ -73,5 +73,11 @@ func StatusCheck(resp *http.Response, acceptStatuses ...int) error {
 		}
 	}
 
-	return fmt.Errorf("unexpected status: %s", resp.Status)
+	return UnexpectedStatusError(resp.StatusCode)
+}
+
+type UnexpectedStatusError int
+
+func (code UnexpectedStatusError) Error() string {
+	return fmt.Sprintf("unexpected status: %d", int(code))
 }

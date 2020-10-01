@@ -3,12 +3,14 @@ package mailchimp
 import (
 	"context"
 	"crypto/md5"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
 	"strings"
 
 	"github.com/carlmjohnson/emailx"
+	"github.com/carlmjohnson/resperr"
 	"github.com/spotlightpa/email-alerts/pkg/httpjson"
 )
 
@@ -95,5 +97,16 @@ func (v3 V3) PutUser(ctx context.Context, req *PutUserRequest) error {
 		&resp,
 		http.StatusOK,
 	)
+	if err != nil {
+		var code httpjson.UnexpectedStatusError
+		if errors.As(err, &code) && code == http.StatusBadRequest {
+			err = resperr.WithUserMessagef(
+				resperr.New(
+					http.StatusBadRequest, "bad address %q", req.EmailAddress),
+				"Server rejected email address %q",
+				req.EmailAddress,
+			)
+		}
+	}
 	return err
 }
