@@ -13,7 +13,6 @@ import (
 	"github.com/carlmjohnson/gateway"
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
-	"github.com/peterbourgon/ff/v3"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 	"github.com/spotlightpa/email-alerts/pkg/sendgrid"
 )
@@ -51,10 +50,12 @@ func (app *appEnv) ParseArgs(args []string) error {
 			return nil
 		})
 	getMC := mailchimp.FlagVar(fs)
-	if err := ff.Parse(fs, args, ff.WithEnvVarPrefix("EMAIL_ALERTS")); err != nil {
+	if err := fs.Parse(args); err != nil {
 		return err
 	}
-
+	if err := flagext.ParseEnv(fs, AppName); err != nil {
+		return err
+	}
 	if err := app.initSentry(*sentryDSN); err != nil {
 		return err
 	}
