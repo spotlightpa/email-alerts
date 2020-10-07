@@ -2,6 +2,7 @@ package emailalerts
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -43,7 +44,18 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 		data,
 		nil,
 	); err != nil {
-		return fmt.Errorf("error adding contact to SendGrid: %w", err)
+		var code httpjson.UnexpectedStatusError
+		if errors.As(err, &code) && code == http.StatusBadRequest {
+			err = resperr.WithUserMessagef(
+				resperr.New(
+					http.StatusBadRequest, "bad address %q", email),
+				"Server rejected email address %q",
+				email,
+			)
+		} else {
+			err = fmt.Errorf("error adding contact to SendGrid: %w", err)
+		}
+		return err
 	}
 	data = sendgrid.SendRequest{
 		Personalizations: []sendgrid.Personalization{{
