@@ -8,6 +8,8 @@ import (
 	"github.com/carlmjohnson/resperr"
 )
 
+var forbiddenNames = []string{"://"}
+
 func validate(email, first, last string) error {
 	if email == "" {
 		err := resperr.New(http.StatusBadRequest, "no address")
@@ -15,19 +17,15 @@ func validate(email, first, last string) error {
 		return err
 	}
 	if !emailx.Valid(email) {
-		err := resperr.New(http.StatusBadRequest,
-			"invalid email %q", email)
+		err := resperr.New(http.StatusBadRequest, "invalid email")
 		err = resperr.WithUserMessagef(err,
 			"Invalid email address provided: %q.", email)
 		return err
 	}
-	if strings.Contains(first, "://") {
-		return resperr.New(http.StatusBadRequest,
-			"invalid first name: %q", first)
-	}
-	if strings.Contains(last, "://") {
-		return resperr.New(http.StatusBadRequest,
-			"invalid last name: %q", first)
+	for _, s := range forbiddenNames {
+		if strings.Contains(first, s) || strings.Contains(last, s) {
+			return resperr.New(http.StatusBadRequest, "invalid first/last name")
+		}
 	}
 
 	return nil
