@@ -17,6 +17,12 @@ func (app *appEnv) addContact(ctx context.Context, first, last, email string, fi
 	if !emailx.Valid(email) {
 		return fmt.Errorf("invalid email: %q", email)
 	}
+	if strings.Contains(first, "://") {
+		return fmt.Errorf("invalid first name: %q", first)
+	}
+	if strings.Contains(last, "://") {
+		return fmt.Errorf("invalid last name: %q", last)
+	}
 	if len(fipsCodes) < 1 {
 		return fmt.Errorf("no county mailing list selected")
 	}
