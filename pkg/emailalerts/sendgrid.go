@@ -14,24 +14,23 @@ import (
 )
 
 func (app *appEnv) addContact(ctx context.Context, first, last, email string, fipsCodes []string) error {
-	if !emailx.Valid(email) {
-		return fmt.Errorf("invalid email: %q", email)
-	}
-	if strings.Contains(first, "://") {
-		return fmt.Errorf("invalid first name: %q", first)
-	}
-	if strings.Contains(last, "://") {
-		return fmt.Errorf("invalid last name: %q", last)
+	if err := validate(email, first, last); err != nil {
+		return err
 	}
 	if len(fipsCodes) < 1 {
-		return fmt.Errorf("no county mailing list selected")
+		err := resperr.New(http.StatusBadRequest, "no fips")
+		err = resperr.WithUserMessage(err, "No county mailing list selected.")
+		return err
 	}
 	ids := make([]string, 0, len(fipsCodes))
 	counties := make([]string, 0, len(fipsCodes))
 	for _, fips := range fipsCodes {
 		id := fipsToList[fips].ID
 		if id == "" {
-			return fmt.Errorf("invalid fips: %q", fips)
+			err := resperr.New(http.StatusBadRequest, "bad fips: %q", fips)
+			err = resperr.WithUserMessage(err,
+				"Invalid county mailing list selected.")
+			return err
 		}
 		ids = append(ids, id)
 		counties = append(counties, fipsToList[fips].Name)

@@ -178,11 +178,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		app.redirectErr(w, r, err)
 		return
 	}
-	if !emailx.Valid(req.EmailAddress) {
-		err := resperr.New(http.StatusBadRequest,
-			"invalid email %q", req.EmailAddress)
-		err = resperr.WithUserMessagef(err,
-			"Invalid email address %q.", req.EmailAddress)
+	if err := validate(req.EmailAddress, req.FirstName, req.LastName); err != nil {
 		app.redirectErr(w, r, err)
 		return
 	}
