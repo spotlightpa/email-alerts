@@ -1,6 +1,6 @@
 module github.com/spotlightpa/email-alerts
 
-go 1.15
+go 1.16
 
 require (
 	github.com/aws/aws-lambda-go v1.20.0 // indirect
