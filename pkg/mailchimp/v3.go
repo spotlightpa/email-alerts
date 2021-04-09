@@ -106,6 +106,9 @@ func (v3 V3) PutUser(ctx context.Context, req *PutUserRequest) error {
 				"Server rejected email address %q",
 				req.EmailAddress,
 			)
+		} else {
+			err = resperr.New(http.StatusBadGateway,
+				"problem connecting to MailChimp: %w", err)
 		}
 	}
 	return err
