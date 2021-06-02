@@ -2,6 +2,7 @@ package emailalerts
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -40,13 +41,26 @@ func TestEndToEnd(t *testing.T) {
 	defer srv.Close()
 
 	err := requests.URL(srv.URL).
+		Client(&http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}).
 		Path("/api/subscribe").
 		BodyForm(url.Values{
 			"EMAIL":        []string{"cjohnson@spotlightpa.org"},
 			"FNAME":        []string{"Carl"},
 			"LNAME":        []string{"Johnson"},
 			"investigator": []string{"1"},
-			"redirect":     []string{"https://www.spotlightpa.org"},
+		}).
+		CheckStatus(http.StatusSeeOther).
+		AddValidator(func(res *http.Response) error {
+			if u, err := res.Location(); err != nil {
+				return err
+			} else if u.Path != "/thanks.html" {
+				return fmt.Errorf("bad redirect: %v", u)
+			}
+			return nil
 		}).
 		Fetch(context.Background())
 	if err != nil {
