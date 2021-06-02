@@ -1,0 +1,6 @@
+HTTP/2.0 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Wed, 02 Jun 2021 16:03:11 GMT
+Link: <https://redacted.api.mailchimp.com/schema/3.0/Lists/Members/Instance.json>; rel="describedBy", <https://redacted.admin.mailchimp.com/lists/members/view?id=redacted>; rel="dashboard"
+
+{"id":"abc123","email_address":"cjohnson@spotlightpa.org","unique_email_id":"abc123","full_name":"Carl Johnson","web_id":123,"email_type":"html","status":"subscribed","merge_fields":{"FNAME":"Carl","LNAME":"Johnson","ADDRESS":"","PHONE":"","BIRTHDAY":"","MMERGE18":""},"stats":{"avg_open_rate":1,"avg_click_rate":0.0112,"ecommerce_data":{"total_revenue":0,"number_of_orders":0,"currency_code":"USD"}},"ip_signup":"","timestamp_signup":"","ip_opt":"","timestamp_opt":"2020-09-03T20:29:07+00:00","member_rating":5,"last_changed":"2021-06-02T16:03:11+00:00","language":"en","vip":false,"email_client":"w/e","location":{"latitude":39,"longitude":-76,"gmtoff":-5,"dstoff":-4,"country_code":"US","timezone":"america/new_york"},"source":"Hosted Signup Form","tags_count":1,"tags":[],"list_id":"","_links":[]}
