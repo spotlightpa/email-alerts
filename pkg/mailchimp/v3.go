@@ -34,7 +34,7 @@ func NewV3(apiKey, listID string, c *http.Client) V3 {
 		datacenter = apiKey[n+1:]
 	}
 	return V3{
-		rb: requests.URL("").
+		rb: new(requests.Builder).
 			Client(c).
 			BasicAuth("", apiKey).
 			Hostf("%s.api.mailchimp.com", datacenter),
