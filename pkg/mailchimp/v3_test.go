@@ -2,32 +2,27 @@ package mailchimp_test
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"testing"
 
+	"github.com/carlmjohnson/requests"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 )
-
-func skipIfBlank(t *testing.T, msg string, ss ...string) {
-	t.Helper()
-	for _, s := range ss {
-		if s == "" {
-			t.Skip(msg)
-		}
-	}
-}
 
 func TestV3(t *testing.T) {
 	apiKey := os.Getenv("MC_TEST_API_KEY")
 	listID := os.Getenv("MC_TEST_LISTID")
 	email := os.Getenv("MC_TEST_EMAIL")
 	interest := os.Getenv("MC_TEST_INTEREST")
-
-	skipIfBlank(t, "Missing MailChimp ENV vars",
-		apiKey, listID, email, interest)
-
+	cl := http.Client{
+		Transport: requests.Replay("testdata"),
+	}
+	if os.Getenv("TEST_RECORD") != "" {
+		cl.Transport = requests.Record(nil, "testdata")
+	}
 	ctx := context.Background()
-	v3 := mailchimp.NewV3(apiKey, listID, nil)
+	v3 := mailchimp.NewV3(apiKey, listID, &cl)
 	req := mailchimp.PutUserRequest{
 		EmailAddress: email,
 		StatusIfNew:  "subscribed",
