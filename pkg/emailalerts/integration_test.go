@@ -66,4 +66,31 @@ func TestEndToEnd(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	err = requests.URL(srv.URL).
+		Client(&http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}).
+		Path("/api/subscribe").
+		BodyForm(url.Values{
+			"EMAIL":        []string{""},
+			"FNAME":        []string{"http://buynow.com"},
+			"LNAME":        []string{"https://viagra.com"},
+			"investigator": []string{"1"},
+		}).
+		CheckStatus(http.StatusSeeOther).
+		AddValidator(func(res *http.Response) error {
+			if u, err := res.Location(); err != nil {
+				return err
+			} else if u.Path != "/sorry.html" ||
+				u.RawQuery != "code=400&msg=Bad+Request&errors=%7B%22EMAIL%22%3A%5B%22No+email+address+provided.%22%5D%2C%22FNAME%22%3A%5B%22First+name+contains+invalid+characters+%5C%22%3A%2F%2F%5C%22%22%5D%2C%22LNAME%22%3A%5B%22Last+name+contains+invalid+characters+%5C%22%3A%2F%2F%5C%22%22%5D%7D" {
+				return fmt.Errorf("bad redirect: %v", u)
+			}
+			return nil
+		}).
+		Fetch(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
 }
