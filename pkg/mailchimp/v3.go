@@ -71,3 +71,28 @@ func (v3 V3) PutUser(ctx context.Context, req *PutUserRequest) error {
 	}
 	return err
 }
+
+type TagAction bool
+
+const (
+	AddTag    TagAction = true
+	RemoveTag TagAction = false
+)
+
+func (v3 V3) UserTags(ctx context.Context, email string, action TagAction, tags ...string) error {
+	var req PostTagRequest
+	status := "active"
+	if action == RemoveTag {
+		status = "inactive"
+	}
+	req.Tags = make([]UserTag, len(tags))
+	for i, tag := range tags {
+		req.Tags[i] = UserTag{Name: tag, Status: status}
+	}
+	return v3.rb.Clone().
+		Pathf("/3.0/lists/%s/members/%s/tags",
+			v3.listID, SubscriberHash(email)).
+		BodyJSON(&req).
+		CheckStatus(http.StatusNoContent).
+		Fetch(ctx)
+}

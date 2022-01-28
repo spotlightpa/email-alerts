@@ -1,3 +1,4 @@
+// Package mailchimp has MailChimp API stuff
 package mailchimp
 
 import (
@@ -46,4 +47,13 @@ type PutUserResponse struct {
 type Tag struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
+}
+
+type PostTagRequest struct {
+	Tags []UserTag `json:"tags"`
+}
+
+type UserTag struct {
+	Name   string `json:"name"`
+	Status string `json:"status"`
 }

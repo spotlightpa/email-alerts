@@ -33,4 +33,10 @@ func TestV3(t *testing.T) {
 	if err := v3.PutUser(ctx, &req); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
+	if err := v3.UserTags(ctx, email, mailchimp.AddTag, "test-tag"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if err := v3.UserTags(ctx, email, mailchimp.RemoveTag, "test-tag"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 }
