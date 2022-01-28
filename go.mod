@@ -8,7 +8,7 @@ require (
 	github.com/carlmjohnson/exitcode v0.20.2
 	github.com/carlmjohnson/flagext v0.21.0
 	github.com/carlmjohnson/gateway v1.20.7
-	github.com/carlmjohnson/requests v0.21.8
+	github.com/carlmjohnson/requests v0.22.1
 	github.com/carlmjohnson/resperr v0.20.5
 	github.com/getsentry/sentry-go v0.11.0
 	github.com/go-chi/chi/v5 v5.0.3
