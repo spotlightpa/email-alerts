@@ -102,6 +102,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		PAPost       bool   `schema:"papost"`
 		BreakingNews bool   `schema:"breaking_news"`
 		PALocal      bool   `schema:"palocal"`
+		StateCollege bool   `schema:"state_college"`
 		Honeypot     bool   `schema:"contact"`
 	}
 	if err := decoder.Decode(&req, r.PostForm); err != nil {
@@ -144,6 +145,17 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 	}); err != nil {
 		app.redirectErr(w, r, err)
 		return
+	}
+	if req.StateCollege {
+		if err := app.mc.UserTags(
+			r.Context(),
+			emailx.Normalize(req.EmailAddress),
+			mailchimp.AddTag,
+			"state_college",
+		); err != nil {
+			app.redirectErr(w, r, err)
+			return
+		}
 	}
 	dest := validateRedirect(r.FormValue("redirect"), "/thanks.html")
 	http.Redirect(w, r, dest, http.StatusSeeOther)
