@@ -101,6 +101,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		Investigator bool   `schema:"investigator"`
 		PAPost       bool   `schema:"papost"`
 		BreakingNews bool   `schema:"breaking_news"`
+		PALocal      bool   `schema:"palocal"`
 		Honeypot     bool   `schema:"contact"`
 	}
 	if err := decoder.Decode(&req, r.PostForm); err != nil {
@@ -129,6 +130,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		"1839fa2e3f": req.Investigator,
 		"eda85eb7dd": req.PAPost,
 		"39b11b47d6": req.BreakingNews,
+		"022f8229cc": req.PALocal,
 	}
 	removeFalse(interests)
 
