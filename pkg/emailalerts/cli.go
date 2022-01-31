@@ -1,3 +1,4 @@
+// Package emailalerts is a web application for handling newsletter sign ups
 package emailalerts
 
 import (
