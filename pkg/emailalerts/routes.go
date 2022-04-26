@@ -132,6 +132,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		"eda85eb7dd": req.PAPost,
 		"39b11b47d6": req.BreakingNews,
 		"022f8229cc": req.PALocal,
+		"e51502ddf3": req.StateCollege,
 	}
 	removeFalse(interests)
 
