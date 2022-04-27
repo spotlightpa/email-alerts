@@ -1,7 +1,7 @@
 github.com/aws/aws-lambda-go v1.11.1/go.mod h1:Rr2SMTLeSMKgD45uep9V/NP8tnbCcySgu04cx0k/6cw=
 github.com/aws/aws-lambda-go v1.31.1 h1:ECZ4ECLm+watHJ+mjNK8D4gU66UVuR8MfqDKTr/Ffkc=
 github.com/aws/aws-lambda-go v1.31.1/go.mod h1:IF5Q7wj4VyZyUFnZ54IQqeWtctHQ9tz+KhcbDenr220=
-github.com/carlmjohnson/be v0.22.3 h1:XwpxXz+wHvZ6O+i/IxcVQaGinsDkF99bpq0VXno6Voc=
+github.com/carlmjohnson/be v0.22.4 h1:CEYQrjQu8ABgEryNXibdk9gvJb7I0yg3iTAK7L4c2bk=
 github.com/carlmjohnson/emailx v0.20.2 h1:0euWTGWnz5zwxXaDwLjP/egV7kACYGUvO5Wqu/5RqL0=
 github.com/carlmjohnson/emailx v0.20.2/go.mod h1:Lngztj3awUX1Zu5b0Jv9ety36JBRKYvwlkFgem+0K+Q=
 github.com/carlmjohnson/exitcode v0.20.2 h1:vE6rmkCGNA4kO4m1qwWIa77PKlUBVg46cNjs22eAOXE=
@@ -14,6 +14,8 @@ github.com/carlmjohnson/requests v0.22.2 h1:hccG5g9ITJlnDip54OVa810AkB366kthFjvA
 github.com/carlmjohnson/requests v0.22.2/go.mod h1:Hw4fFOk3xDlHQbNRTGo4oc52TUTpVEq93sNy/H+mrQM=
 github.com/carlmjohnson/resperr v0.20.5 h1:LBw+jsFSiGsb+kdJBmRtS9ky5CZmiLqWgj3QtiKYGC0=
 github.com/carlmjohnson/resperr v0.20.5/go.mod h1:UD4WLdpQTfUt4pl0wZsKF/7MuZIoi78qWloEDXV5Rw0=
+github.com/carlmjohnson/rootdown v0.22.3 h1:jNAWleZSi/GcEm9heE7F21836y10yCfBrNELR2meZl8=
+github.com/carlmjohnson/rootdown v0.22.3/go.mod h1:L8VUKNHObVp8EqgaAgKJ2Axc2ZuiX28F59288qJTHB4=
 github.com/carlmjohnson/versioninfo v0.22.1 h1:NVwTmCUpSoxBxy8+z10CbyBazeRZ4R2n6QgrNi3Wd6M=
 github.com/carlmjohnson/versioninfo v0.22.1/go.mod h1:QT9mph3wcVfISUKd0i9sZfVrPviHuSF+cUtLjm2WSf8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
