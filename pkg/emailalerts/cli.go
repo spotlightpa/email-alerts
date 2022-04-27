@@ -13,6 +13,7 @@ import (
 
 	"github.com/carlmjohnson/flagx"
 	"github.com/carlmjohnson/gateway"
+	"github.com/carlmjohnson/versioninfo"
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
@@ -21,8 +22,7 @@ import (
 const AppName = "email-alerts"
 
 var (
-	BuildVersion string = "Development"
-	DeployURL    string = "http://localhost"
+	DeployURL string = "http://localhost"
 )
 
 func CLI(args []string) error {
@@ -103,7 +103,7 @@ func (app *appEnv) initSentry(dsn string) error {
 	}
 	return sentry.Init(sentry.ClientOptions{
 		Dsn:       dsn,
-		Release:   BuildVersion,
+		Release:   versioninfo.Revision,
 		Transport: transport,
 	})
 }
