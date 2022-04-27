@@ -15,6 +15,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/gorilla/schema"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
+	"golang.org/x/exp/maps"
 )
 
 func (app *appEnv) routes() http.Handler {
@@ -125,7 +126,9 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		"FNAME": strings.TrimSpace(req.FirstName),
 		"LNAME": strings.TrimSpace(req.LastName),
 	}
-	removeBlank(mergeFields)
+	maps.DeleteFunc(mergeFields, func(k, v string) bool {
+		return v == ""
+	})
 
 	interests := map[string]bool{
 		"1839fa2e3f": req.Investigator,
@@ -134,7 +137,9 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		"022f8229cc": req.PALocal,
 		"e51502ddf3": req.StateCollege,
 	}
-	removeFalse(interests)
+	maps.DeleteFunc(interests, func(k string, v bool) bool {
+		return !v
+	})
 
 	if err := app.mc.PutUser(r.Context(), &mailchimp.PutUserRequest{
 		EmailAddress: emailx.Normalize(req.EmailAddress),
