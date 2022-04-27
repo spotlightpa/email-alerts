@@ -1,9 +1,8 @@
 module github.com/spotlightpa/email-alerts
 
-go 1.16
+go 1.18
 
 require (
-	github.com/aws/aws-lambda-go v1.24.0 // indirect
 	github.com/carlmjohnson/emailx v0.20.2
 	github.com/carlmjohnson/exitcode v0.20.2
 	github.com/carlmjohnson/flagext v0.21.0
@@ -14,4 +13,10 @@ require (
 	github.com/go-chi/chi/v5 v5.0.3
 	github.com/go-chi/cors v1.2.0
 	github.com/gorilla/schema v1.2.0
+	golang.org/x/exp v0.0.0-20220426173459-3bcf042a4bf5
+)
+
+require (
+	github.com/aws/aws-lambda-go v1.24.0 // indirect
+	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 )
