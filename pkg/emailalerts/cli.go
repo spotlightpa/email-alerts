@@ -4,13 +4,14 @@ package emailalerts
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"time"
 
-	"github.com/carlmjohnson/flagext"
+	"github.com/carlmjohnson/flagx"
 	"github.com/carlmjohnson/gateway"
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
@@ -40,15 +41,18 @@ func (app *appEnv) ParseArgs(args []string) error {
 	fs := flag.NewFlagSet(AppName, flag.ContinueOnError)
 	fs.IntVar(&app.port, "port", -1, "specify a port to use http rather than AWS Lambda")
 
-	app.l = log.New(nil, AppName+" ", log.LstdFlags)
-	flagext.LoggerVar(fs, app.l, "silent", flagext.LogSilent, "don't log debug output")
+	app.l = log.New(os.Stderr, AppName+" ", log.LstdFlags)
+	silent := fs.Bool("silent", false, "don't log debug output")
 	sentryDSN := fs.String("sentry-dsn", "", "DSN `pseudo-URL` for Sentry")
 	getMC := mailchimp.FlagVar(fs)
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if err := flagext.ParseEnv(fs, AppName); err != nil {
+	if err := flagx.ParseEnv(fs, AppName); err != nil {
 		return err
+	}
+	if *silent {
+		app.l.SetOutput(io.Discard)
 	}
 	if err := app.initSentry(*sentryDSN); err != nil {
 		return err
