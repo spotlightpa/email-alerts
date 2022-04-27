@@ -1,16 +1,15 @@
 package emailalerts
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strconv"
+	"os"
 	"strings"
 
 	"github.com/carlmjohnson/emailx"
 	"github.com/carlmjohnson/resperr"
-	"github.com/go-chi/chi/v5"
+	"github.com/carlmjohnson/rootdown"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/gorilla/schema"
@@ -19,32 +18,35 @@ import (
 )
 
 func (app *appEnv) routes() http.Handler {
-	r := chi.NewRouter()
-	origin := "https://*.spotlightpa.org"
+	var mw rootdown.MiddlewareStack
 	if app.isLambda() {
-		r.Use(middleware.RequestID)
+		mw.Push(middleware.RequestID)
 	} else {
-		r.Use(middleware.Recoverer)
+		mw.Push(middleware.Recoverer)
+	}
+	mw.Push(middleware.RealIP)
+	mw.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
+	mw.Push(app.versionMiddleware)
+	origin := "https://*.spotlightpa.org"
+	if !app.isLambda() {
 		origin = "*"
 	}
-	r.Use(middleware.RealIP)
-	r.Use(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
-	r.Use(app.versionMiddleware)
-	r.Use(cors.Handler(cors.Options{
+	mw.Push(cors.Handler(cors.Options{
 		AllowedOrigins: []string{origin},
 		AllowedHeaders: []string{"*"},
 		AllowedMethods: []string{http.MethodGet, http.MethodPost},
 		MaxAge:         300,
 	}))
-	r.Get("/api/healthcheck", app.ping)
-	r.Get(`/api/healthcheck/{code:\d{3}}`, app.pingErr)
-	r.Post(`/api/subscribe`, app.postSubscribeMailchimp)
+
+	var rr rootdown.Router
+	rr.Get("/api/healthcheck", app.ping, mw...)
+	rr.Post("/api/subscribe", app.postSubscribeMailchimp, mw...)
 	if app.isLambda() {
-		r.NotFound(app.notFound)
+		rr.NotFound(app.notFound, mw...)
 	} else {
-		r.NotFound(http.FileServer(http.Dir("./public")).ServeHTTP)
+		_ = rr.Mount("", "", os.DirFS("./public"), mw...)
 	}
-	return r
+	return &rr
 }
 
 func (app *appEnv) notFound(w http.ResponseWriter, r *http.Request) {
@@ -62,16 +64,6 @@ func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(b)
-}
-
-var errPing = fmt.Errorf("test ping")
-
-func (app *appEnv) pingErr(w http.ResponseWriter, r *http.Request) {
-	code := chi.URLParam(r, "code")
-	statusCode, _ := strconv.Atoi(code)
-	app.Printf("start pingErr %q", code)
-
-	app.replyErr(w, r, resperr.WithStatusCode(errPing, statusCode))
 }
 
 func validateRedirect(formVal, fallback string) string {

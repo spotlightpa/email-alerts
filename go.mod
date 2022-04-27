@@ -9,6 +9,7 @@ require (
 	github.com/carlmjohnson/gateway v1.20.7
 	github.com/carlmjohnson/requests v0.22.2
 	github.com/carlmjohnson/resperr v0.20.5
+	github.com/carlmjohnson/rootdown v0.22.3
 	github.com/carlmjohnson/versioninfo v0.22.1
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/go-chi/chi/v5 v5.0.7
