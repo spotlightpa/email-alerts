@@ -8,12 +8,13 @@ import (
 	"net/url"
 
 	"github.com/carlmjohnson/resperr"
+	"github.com/carlmjohnson/versioninfo"
 	"github.com/getsentry/sentry-go"
 )
 
 func (app *appEnv) versionMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("SpotlightPA-App-Version", BuildVersion)
+		w.Header().Set("SpotlightPA-App-Version", versioninfo.Revision)
 		h.ServeHTTP(w, r)
 	})
 }
