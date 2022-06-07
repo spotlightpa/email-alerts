@@ -12,8 +12,8 @@ github.com/carlmjohnson/gateway v1.20.7 h1:YAh975ebqncs2CnHUcauq0DtQcWbI1d/bRi5K
 github.com/carlmjohnson/gateway v1.20.7/go.mod h1:6D9xs2uAFs8UbCawK3gDCRkPRvZHuKI+HSs29zwFsHs=
 github.com/carlmjohnson/requests v0.22.2 h1:hccG5g9ITJlnDip54OVa810AkB366kthFjvA90N4owM=
 github.com/carlmjohnson/requests v0.22.2/go.mod h1:Hw4fFOk3xDlHQbNRTGo4oc52TUTpVEq93sNy/H+mrQM=
-github.com/carlmjohnson/resperr v0.20.5 h1:LBw+jsFSiGsb+kdJBmRtS9ky5CZmiLqWgj3QtiKYGC0=
-github.com/carlmjohnson/resperr v0.20.5/go.mod h1:UD4WLdpQTfUt4pl0wZsKF/7MuZIoi78qWloEDXV5Rw0=
+github.com/carlmjohnson/resperr v0.22.0-alpha1 h1:TdR6MSRMAdNCLdPKg6L3lG591W8+QQrtkGsSx6RLvc8=
+github.com/carlmjohnson/resperr v0.22.0-alpha1/go.mod h1:1v1cy1aZW0GDaLgLdLvRV7TPxK1wp5KD38Oia/Qm5AM=
 github.com/carlmjohnson/rootdown v0.22.3 h1:jNAWleZSi/GcEm9heE7F21836y10yCfBrNELR2meZl8=
 github.com/carlmjohnson/rootdown v0.22.3/go.mod h1:L8VUKNHObVp8EqgaAgKJ2Axc2ZuiX28F59288qJTHB4=
 github.com/carlmjohnson/versioninfo v0.22.1 h1:NVwTmCUpSoxBxy8+z10CbyBazeRZ4R2n6QgrNi3Wd6M=

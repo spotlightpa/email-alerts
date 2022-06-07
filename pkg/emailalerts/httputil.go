@@ -52,7 +52,7 @@ func (app *appEnv) redirectErr(w http.ResponseWriter, r *http.Request, err error
 	msg := resperr.UserMessage(err)
 	sorryURL = fmt.Sprintf("%s?code=%d&msg=%s",
 		sorryURL, code, url.QueryEscape(msg))
-	if ve := ValidationErrors(err); len(ve) > 0 {
+	if ve := resperr.ValidationErrors(err); len(ve) > 0 {
 		b, _ := json.Marshal(ve)
 		sorryURL += fmt.Sprintf("&errors=%s", url.QueryEscape(string(b)))
 	}
