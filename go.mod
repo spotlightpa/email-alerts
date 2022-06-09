@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/carlmjohnson/emailx v0.20.2
 	github.com/carlmjohnson/exitcode v0.20.2
-	github.com/carlmjohnson/flagx v0.22.1
+	github.com/carlmjohnson/flagx v0.22.2
 	github.com/carlmjohnson/gateway v1.22.2
 	github.com/carlmjohnson/requests v0.22.3
 	github.com/carlmjohnson/resperr v0.22.0

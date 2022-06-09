@@ -42,7 +42,11 @@ func (app *appEnv) ParseArgs(args []string) error {
 	fs.IntVar(&app.port, "port", -1, "specify a port to use http rather than AWS Lambda")
 
 	app.l = log.New(os.Stderr, AppName+" ", log.LstdFlags)
-	silent := fs.Bool("silent", false, "don't log debug output")
+	flagx.BoolFunc(fs, "silent", "don't log debug output", func() error {
+		app.l.SetOutput(io.Discard)
+		return nil
+	})
+
 	sentryDSN := fs.String("sentry-dsn", "", "DSN `pseudo-URL` for Sentry")
 	getMC := mailchimp.FlagVar(fs)
 	if err := fs.Parse(args); err != nil {
@@ -50,9 +54,6 @@ func (app *appEnv) ParseArgs(args []string) error {
 	}
 	if err := flagx.ParseEnv(fs, AppName); err != nil {
 		return err
-	}
-	if *silent {
-		app.l.SetOutput(io.Discard)
 	}
 	if err := app.initSentry(*sentryDSN); err != nil {
 		return err
