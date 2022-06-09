@@ -8,7 +8,7 @@ require (
 	github.com/carlmjohnson/flagx v0.22.1
 	github.com/carlmjohnson/gateway v1.22.2
 	github.com/carlmjohnson/requests v0.22.3
-	github.com/carlmjohnson/resperr v0.22.0-alpha2
+	github.com/carlmjohnson/resperr v0.22.0
 	github.com/carlmjohnson/rootdown v0.22.3
 	github.com/carlmjohnson/versioninfo v0.22.2
 	github.com/getsentry/sentry-go v0.13.0
