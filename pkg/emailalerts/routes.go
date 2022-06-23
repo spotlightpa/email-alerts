@@ -88,15 +88,16 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 	decoder := schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
 	var req struct {
-		EmailAddress string `schema:"EMAIL"`
-		FirstName    string `schema:"FNAME"`
-		LastName     string `schema:"LNAME"`
-		Investigator bool   `schema:"investigator"`
-		PAPost       bool   `schema:"papost"`
-		BreakingNews bool   `schema:"breaking_news"`
-		PALocal      bool   `schema:"palocal"`
-		StateCollege bool   `schema:"state_college"`
-		Honeypot     bool   `schema:"contact"`
+		EmailAddress  string `schema:"EMAIL"`
+		FirstName     string `schema:"FNAME"`
+		LastName      string `schema:"LNAME"`
+		Investigator  bool   `schema:"investigator"`
+		PAPost        bool   `schema:"papost"`
+		BreakingNews  bool   `schema:"breaking_news"`
+		PALocal       bool   `schema:"palocal"`
+		TalkOfTheTown bool   `schema:"talkofthetown"`
+		StateCollege  bool   `schema:"state_college"`
+		Honeypot      bool   `schema:"contact"`
 	}
 	if err := decoder.Decode(&req, r.PostForm); err != nil {
 		app.redirectErr(w, r, err)
@@ -127,7 +128,8 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		"eda85eb7dd": req.PAPost,
 		"39b11b47d6": req.BreakingNews,
 		"022f8229cc": req.PALocal,
-		"e51502ddf3": req.StateCollege,
+		"e51502ddf3": req.TalkOfTheTown ||
+			req.StateCollege,
 	}
 	maps.DeleteFunc(interests, func(k string, v bool) bool {
 		return !v
