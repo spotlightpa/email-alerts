@@ -65,8 +65,7 @@ func (v3 V3) PutUser(ctx context.Context, req *PutUserRequest) error {
 			err = resperr.WithUserMessage(err, errResp.Detail)
 		}
 		if requests.HasStatusErr(err, http.StatusBadRequest) {
-			err = resperr.New(http.StatusBadRequest,
-				"bad address %q: %w", req.EmailAddress, err)
+			err = ErrorBadAddress{req.EmailAddress, err}
 		} else {
 			err = resperr.New(http.StatusBadGateway,
 				"problem connecting to MailChimp: %w", err)
@@ -107,3 +106,16 @@ type ErrorResponse struct {
 	Detail   string `json:"detail"`
 	Instance string `json:"instance"`
 }
+
+type ErrorBadAddress struct {
+	email string
+	cause error
+}
+
+func (b ErrorBadAddress) Error() string {
+	return fmt.Sprintf("bad address: %q", b.email)
+}
+
+func (b ErrorBadAddress) Unwrap() error { return b.cause }
+
+func (ErrorBadAddress) StatusCode() int { return http.StatusBadRequest }
