@@ -7,7 +7,7 @@ require (
 	github.com/carlmjohnson/exitcode v0.20.2
 	github.com/carlmjohnson/flagx v0.22.2
 	github.com/carlmjohnson/gateway v1.22.2
-	github.com/carlmjohnson/requests v0.22.3
+	github.com/carlmjohnson/requests v0.22.4-0.20221010184337-f13beed4347f
 	github.com/carlmjohnson/resperr v0.22.0
 	github.com/carlmjohnson/rootdown v0.22.3
 	github.com/carlmjohnson/versioninfo v0.22.2
@@ -20,6 +20,6 @@ require (
 
 require (
 	github.com/aws/aws-lambda-go v1.32.0 // indirect
-	golang.org/x/net v0.0.0-20220607020251-c690dde0001d // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 )

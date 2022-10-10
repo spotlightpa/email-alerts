@@ -48,22 +48,25 @@ func SubscriberHash(email string) string {
 }
 
 func (v3 V3) PutUser(ctx context.Context, req *PutUserRequest) error {
-	var resp PutUserResponse
+	var (
+		resp    PutUserResponse
+		errResp ErrorResponse
+	)
 	err := v3.rb.Clone().
 		Pathf("/3.0/lists/%s/members/%s",
 			v3.listID, SubscriberHash(req.EmailAddress)).
 		Put().
 		BodyJSON(&req).
 		ToJSON(&resp).
+		OnValidationError(nil, requests.ToJSON(&errResp)).
 		Fetch(ctx)
 	if err != nil {
+		if errResp.Detail != "" {
+			err = resperr.WithUserMessage(err, errResp.Detail)
+		}
 		if requests.HasStatusErr(err, http.StatusBadRequest) {
-			err = resperr.WithUserMessagef(
-				resperr.New(
-					http.StatusBadRequest, "bad address %q", req.EmailAddress),
-				"Server rejected email address %q",
-				req.EmailAddress,
-			)
+			err = resperr.New(http.StatusBadRequest,
+				"bad address %q", req.EmailAddress)
 		} else {
 			err = resperr.New(http.StatusBadGateway,
 				"problem connecting to MailChimp: %w", err)
@@ -95,4 +98,12 @@ func (v3 V3) UserTags(ctx context.Context, email string, action TagAction, tags 
 		BodyJSON(&req).
 		CheckStatus(http.StatusNoContent).
 		Fetch(ctx)
+}
+
+type ErrorResponse struct {
+	Type     string `json:"type"`
+	Title    string `json:"title"`
+	Status   int    `json:"status"`
+	Detail   string `json:"detail"`
+	Instance string `json:"instance"`
 }
