@@ -58,13 +58,14 @@ func (v3 V3) PutUser(ctx context.Context, req *PutUserRequest) error {
 		Put().
 		BodyJSON(&req).
 		ToJSON(&resp).
-		OnValidationError(nil, requests.ToJSON(&errResp)).
+		OnValidatorError(requests.ToJSON(&errResp)).
 		Fetch(ctx)
 	if err != nil {
-		if errResp.Detail != "" {
-			err = resperr.WithUserMessage(err, errResp.Detail)
+		if err == requests.ErrInvalidHandled {
+			err = resperr.WithUserMessagef(err, "%s: \n%s",
+				errResp.Title, errResp.Detail)
 		}
-		if requests.HasStatusErr(err, http.StatusBadRequest) {
+		if errResp.Status == http.StatusBadRequest {
 			err = ErrorBadAddress{req.EmailAddress, err}
 		} else {
 			err = resperr.New(http.StatusBadGateway,
