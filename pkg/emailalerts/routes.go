@@ -97,6 +97,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		PALocal       bool   `schema:"palocal"`
 		TalkOfTheTown bool   `schema:"talkofthetown"`
 		StateCollege  bool   `schema:"state_college"`
+		WeekInReview  bool   `schema:"week_in_review"`
 		Honeypot      bool   `schema:"contact"`
 	}
 	if err := decoder.Decode(&req, r.PostForm); err != nil {
@@ -130,6 +131,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		"022f8229cc": req.PALocal,
 		"e51502ddf3": req.TalkOfTheTown ||
 			req.StateCollege,
+		"5fe8bd817f": req.WeekInReview,
 	}
 	maps.DeleteFunc(interests, func(k string, v bool) bool {
 		return !v
