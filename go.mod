@@ -11,15 +11,15 @@ require (
 	github.com/carlmjohnson/resperr v0.22.0
 	github.com/carlmjohnson/rootdown v0.22.4
 	github.com/carlmjohnson/versioninfo v0.22.4
-	github.com/getsentry/sentry-go v0.14.0
-	github.com/go-chi/chi/v5 v5.0.7
+	github.com/getsentry/sentry-go v0.17.0
+	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/cors v1.2.1
 	github.com/gorilla/schema v1.2.0
-	golang.org/x/exp v0.0.0-20221006183845-316c7553db56
+	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
 )
 
 require (
-	github.com/aws/aws-lambda-go v1.34.1 // indirect
+	github.com/aws/aws-lambda-go v1.37.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
