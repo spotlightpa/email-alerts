@@ -3,6 +3,7 @@ package mailchimp
 import (
 	"context"
 	"crypto/md5"
+	"errors"
 	"flag"
 	"fmt"
 	"net/http"
@@ -58,10 +59,10 @@ func (v3 V3) PutUser(ctx context.Context, req *PutUserRequest) error {
 		Put().
 		BodyJSON(&req).
 		ToJSON(&resp).
-		OnValidatorError(requests.ToJSON(&errResp)).
+		ErrorJSON(&errResp).
 		Fetch(ctx)
 	if err != nil {
-		if err == requests.ErrInvalidHandled {
+		if errors.Is(err, requests.ErrInvalidHandled) {
 			err = resperr.WithUserMessagef(err, "%s: \n%s",
 				errResp.Title, errResp.Detail)
 		}
