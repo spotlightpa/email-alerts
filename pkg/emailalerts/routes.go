@@ -98,7 +98,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		TalkOfTheTown   bool   `schema:"talkofthetown"`
 		StateCollege    bool   `schema:"state_college"`
 		WeekInReview    bool   `schema:"week_in_review"`
-		PennStateAlerts bool   `schema:"penn_state_alerts"`
+		PennStateAlerts bool   `schema:"pennstatealert"`
 		Honeypot        bool   `schema:"contact"`
 	}
 	if err := decoder.Decode(&req, r.PostForm); err != nil {
