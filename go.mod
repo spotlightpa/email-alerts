@@ -7,7 +7,7 @@ require (
 	github.com/carlmjohnson/exitcode v0.20.2
 	github.com/carlmjohnson/flagx v0.22.2
 	github.com/carlmjohnson/gateway v1.22.2
-	github.com/carlmjohnson/requests v0.23.1-alpha1
+	github.com/carlmjohnson/requests v0.23.1
 	github.com/carlmjohnson/resperr v0.22.0
 	github.com/carlmjohnson/rootdown v0.22.4
 	github.com/carlmjohnson/versioninfo v0.22.4
@@ -15,7 +15,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/cors v1.2.1
 	github.com/gorilla/schema v1.2.0
-	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
+	golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874
 )
 
 require (
