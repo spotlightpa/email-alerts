@@ -9,8 +9,8 @@ github.com/carlmjohnson/flagx v0.22.2 h1:UXf7gL4Ffv5RIH/HKp8CGNzDyopgezFLrDO1m4F
 github.com/carlmjohnson/flagx v0.22.2/go.mod h1:obobISvBnxgEXPLBITVXhRUOlSlzza1SGt34M64CPJc=
 github.com/carlmjohnson/gateway v1.22.2 h1:Nr7JVUSruWG3I6PGGxUTaIGLHSEhCcoppFX0zGxha80=
 github.com/carlmjohnson/gateway v1.22.2/go.mod h1:C2xSaIo4kkvdbTQQI5EhmzzWC1wB/+f5COhlpQ4O8fA=
-github.com/carlmjohnson/requests v0.23.1-alpha1 h1:9iWjK4PPRNdQWbh7tsbVtd5wJ48yyisq/hWtuW9U4d4=
-github.com/carlmjohnson/requests v0.23.1-alpha1/go.mod h1:09VwhOaRQYCraJcByjEuvuOGO1jxUjIx6vnAEkt2ges=
+github.com/carlmjohnson/requests v0.23.1 h1:d8FpOZC6We3raxa3cW1oEyK+cNz4XSW8A6wjMkMsbOM=
+github.com/carlmjohnson/requests v0.23.1/go.mod h1:i/0+cvgndkM7SPtw911bcbYR4CP+/9vP/+TbcFqPz3A=
 github.com/carlmjohnson/resperr v0.22.0 h1:oSliyZLmyncmPLEZXydy6gNhJgQ/9AaVpaGQLDRQ/NM=
 github.com/carlmjohnson/resperr v0.22.0/go.mod h1:iEKmv4gBlxjy4iLy7ExxLjdCBJ5wSaRlDZDnqGfBtls=
 github.com/carlmjohnson/rootdown v0.22.4 h1:DX+ESIFKPA519BUM9u/ONvT2AHAiPDveBT1aCZhTvEc=
@@ -32,8 +32,8 @@ github.com/pingcap/errors v0.11.4 h1:lFuQV/oaUMGcD2tqt+01ROSmJs75VG1ToEOkZIZ4nE4
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/stretchr/testify v1.7.2 h1:4jaiDzPyXQvSd7D0EjG45355tLlV3VOECpq10pLC+8s=
-golang.org/x/exp v0.0.0-20230118134722-a68e582fa157 h1:fiNkyhJPUvxbRPbCqY/D9qdjmPzfHcpK3P4bM4gioSY=
-golang.org/x/exp v0.0.0-20230118134722-a68e582fa157/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
+golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874 h1:kWC3b7j6Fu09SnEBr7P4PuQyM0R6sqyH9R+EjIvT1nQ=
+golang.org/x/exp v0.0.0-20230124195608-d38c7dcee874/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
 golang.org/x/net v0.5.0 h1:GyT4nK/YDHSqa1c4753ouYCDajOYKTja9Xb/OHtgvSw=
 golang.org/x/net v0.5.0/go.mod h1:DivGGAXEgPSlEBzxGzZI+ZLohi+xUj054jfeKui00ws=
 golang.org/x/sys v0.4.0 h1:Zr2JFtRQNX3BCZ8YtxRE9hNJYC8J6I1MVbMg6owUp18=
