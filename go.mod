@@ -21,7 +21,7 @@ require (
 require (
 	github.com/aws/aws-lambda-go v1.37.0 // indirect
 	github.com/carlmjohnson/bytemap v0.23.3 // indirect
-	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
 )
