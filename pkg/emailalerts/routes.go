@@ -126,14 +126,14 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 	})
 
 	interests := map[string]bool{
-		"1839fa2e3f": req.Investigator,
-		"eda85eb7dd": req.PAPost,
-		"39b11b47d6": req.BreakingNews,
-		"022f8229cc": req.PALocal,
-		"e51502ddf3": req.TalkOfTheTown ||
+		"00612929b8": req.Investigator,
+		"8dbf00ee98": req.PAPost,
+		"6137d9281f": req.BreakingNews,
+		"84cfce88c7": req.PALocal,
+		"ff98baba5f": req.TalkOfTheTown ||
 			req.StateCollege,
-		"5fe8bd817f": req.WeekInReview,
-		"145c892d19": req.PennStateAlerts,
+		"5c3b89e306": req.WeekInReview,
+		"062c085860": req.PennStateAlerts,
 	}
 	maps.DeleteFunc(interests, func(k string, v bool) bool {
 		return !v
