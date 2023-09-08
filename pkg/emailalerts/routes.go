@@ -95,7 +95,8 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		PAPost          bool   `schema:"papost"`
 		BreakingNews    bool   `schema:"breaking_news"`
 		PALocal         bool   `schema:"palocal"`
-		TalkOfTheTown   bool   `schema:"talkofthetown"`
+		BerksCounty     bool   `schema:"berks_county"`
+		TalkOfTheTown   bool   `schema:"talkofthetown"` // Alias for StateCollege
 		StateCollege    bool   `schema:"state_college"`
 		WeekInReview    bool   `schema:"week_in_review"`
 		PennStateAlerts bool   `schema:"pennstatealert"`
@@ -130,6 +131,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		"8dbf00ee98": req.PAPost,
 		"6137d9281f": req.BreakingNews,
 		"84cfce88c7": req.PALocal,
+		"aa8800a947": req.BerksCounty,
 		"ff98baba5f": req.TalkOfTheTown ||
 			req.StateCollege,
 		"5c3b89e306": req.WeekInReview,
