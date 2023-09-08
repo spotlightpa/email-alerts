@@ -11,7 +11,7 @@ require (
 	github.com/carlmjohnson/resperr v0.22.0
 	github.com/carlmjohnson/rootdown v0.22.4
 	github.com/carlmjohnson/versioninfo v0.22.5
-	github.com/getsentry/sentry-go v0.20.0
+	github.com/getsentry/sentry-go v0.24.0
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/go-chi/cors v1.2.1
 	github.com/gorilla/schema v1.2.0
