@@ -1,6 +1,7 @@
 package emailalerts
 
 import (
+	"maps"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -14,7 +15,6 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/gorilla/schema"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
-	"golang.org/x/exp/maps"
 )
 
 func (app *appEnv) routes() http.Handler {
