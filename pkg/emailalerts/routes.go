@@ -101,12 +101,21 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		WeekInReview    bool   `schema:"week_in_review"`
 		PennStateAlerts bool   `schema:"pennstatealert"`
 		Honeypot        bool   `schema:"contact"`
+		Shibboleth      string `schema:"shibboleth"`
 	}
 	if err := decoder.Decode(&req, r.PostForm); err != nil {
 		app.redirectErr(w, r, err)
 		return
 	}
 	if err := validate(req.EmailAddress, req.FirstName, req.LastName); err != nil {
+		app.redirectErr(w, r, err)
+		return
+	}
+	if req.Shibboleth != "PA Rocks!" {
+		err := resperr.New(http.StatusBadRequest,
+			"missing shibboleth: %q", req.EmailAddress)
+		err = resperr.WithUserMessage(err,
+			"JavaScript is required to sign up for a mailing list.")
 		app.redirectErr(w, r, err)
 		return
 	}

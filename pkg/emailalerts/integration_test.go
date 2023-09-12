@@ -55,6 +55,7 @@ func TestEndToEnd(t *testing.T) {
 			"FNAME":        []string{"Carl"},
 			"LNAME":        []string{"Johnson"},
 			"investigator": []string{"1"},
+			"shibboleth":   []string{"PA Rocks!"},
 		}).
 		CheckStatus(http.StatusSeeOther).
 		AddValidator(func(res *http.Response) error {
