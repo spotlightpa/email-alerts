@@ -18,6 +18,10 @@ func New(apiKey string, l *log.Logger) *Client {
 }
 
 func (c *Client) Verify(ctx context.Context, email string) bool {
+	if c.apiKey == "" {
+		c.l.Print("kickbox: warning, no API key set")
+		return true
+	}
 	var obj response
 	err := requests.
 		URL("https://api.kickbox.com/v2/verify").
