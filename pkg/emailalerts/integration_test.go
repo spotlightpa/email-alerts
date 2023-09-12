@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/carlmjohnson/requests"
+	"github.com/spotlightpa/email-alerts/pkg/kickbox"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 )
 
@@ -35,12 +36,14 @@ func TestEndToEnd(t *testing.T) {
 	app := appEnv{
 		l:  log.Default(),
 		mc: mc,
+		kb: kickbox.New("", log.Default()),
 	}
 
 	srv := httptest.NewServer(fixIP(app.routes()))
 	defer srv.Close()
 
-	err := requests.URL(srv.URL).
+	err := requests.
+		New(requests.TestServerConfig(srv)).
 		Client(&http.Client{
 			CheckRedirect: func(req *http.Request, via []*http.Request) error {
 				return http.ErrUseLastResponse
