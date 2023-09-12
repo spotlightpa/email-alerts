@@ -118,6 +118,14 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		app.redirectErr(w, r, err)
 		return
 	}
+	if !app.kb.Verify(r.Context(), req.EmailAddress) {
+		err := resperr.New(http.StatusBadRequest,
+			"Kickbox rejected %q", req.EmailAddress)
+		err = resperr.WithUserMessage(err,
+			"There was a problem with your request")
+		app.redirectErr(w, r, err)
+		return
+	}
 	mergeFields := map[string]string{
 		"FNAME": strings.TrimSpace(req.FirstName),
 		"LNAME": strings.TrimSpace(req.LastName),

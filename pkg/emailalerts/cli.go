@@ -16,6 +16,7 @@ import (
 	"github.com/carlmjohnson/versioninfo"
 	"github.com/getsentry/sentry-go"
 	sentryhttp "github.com/getsentry/sentry-go/http"
+	"github.com/spotlightpa/email-alerts/pkg/kickbox"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 )
 
@@ -46,7 +47,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 		app.l.SetOutput(io.Discard)
 		return nil
 	})
-
+	kb := fs.String("kickbox-api-key", "", "API `key` for Kickbox")
 	sentryDSN := fs.String("sentry-dsn", "", "DSN `pseudo-URL` for Sentry")
 	getMC := mailchimp.FlagVar(fs)
 	if err := fs.Parse(args); err != nil {
@@ -58,6 +59,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 	if err := app.initSentry(*sentryDSN); err != nil {
 		return err
 	}
+	app.kb = kickbox.New(*kb, app.l)
 	app.mc = getMC(&http.Client{Timeout: 5 * time.Second})
 	return nil
 }
@@ -66,6 +68,7 @@ type appEnv struct {
 	port int
 	l    *log.Logger
 	mc   mailchimp.V3
+	kb   *kickbox.Client
 }
 
 func (app *appEnv) Exec() (err error) {
