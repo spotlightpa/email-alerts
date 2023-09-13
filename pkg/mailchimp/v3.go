@@ -115,7 +115,7 @@ type ErrorBadAddress struct {
 }
 
 func (b ErrorBadAddress) Error() string {
-	return fmt.Sprintf("bad address: %q", b.email)
+	return fmt.Sprintf(`mailchimp: response="bad address" email=%q`, b.email)
 }
 
 func (b ErrorBadAddress) Unwrap() error { return b.cause }

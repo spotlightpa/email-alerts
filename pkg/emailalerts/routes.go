@@ -169,6 +169,9 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		app.redirectErr(w, r, err)
 		return
 	}
+
+	app.l.Printf("subscribed: email=%q", req.EmailAddress)
+
 	dest := validateRedirect(r.FormValue("redirect"), "/thanks.html")
 	http.Redirect(w, r, dest, http.StatusSeeOther)
 }
