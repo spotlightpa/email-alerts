@@ -3,6 +3,7 @@ module github.com/spotlightpa/email-alerts
 go 1.21
 
 require (
+	github.com/carlmjohnson/be v0.22.4
 	github.com/carlmjohnson/emailx v0.23.1
 	github.com/carlmjohnson/exitcode v0.20.2
 	github.com/carlmjohnson/flagx v0.22.2

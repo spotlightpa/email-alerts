@@ -10,6 +10,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/carlmjohnson/be"
 	"github.com/carlmjohnson/requests"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
@@ -42,13 +43,10 @@ func TestEndToEnd(t *testing.T) {
 	srv := httptest.NewServer(fixIP(app.routes()))
 	defer srv.Close()
 
+	srv.Client().CheckRedirect = requests.NoFollow
+
 	err := requests.
 		New(requests.TestServerConfig(srv)).
-		Client(&http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}).
 		Path("/api/subscribe").
 		BodyForm(url.Values{
 			"EMAIL":        []string{"cjohnson@spotlightpa.org"},
@@ -67,15 +65,10 @@ func TestEndToEnd(t *testing.T) {
 			return nil
 		}).
 		Fetch(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = requests.URL(srv.URL).
-		Client(&http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
-		}).
+	be.NilErr(t, err)
+
+	err = requests.
+		New(requests.TestServerConfig(srv)).
 		Path("/api/subscribe").
 		BodyForm(url.Values{
 			"EMAIL":        []string{""},
@@ -94,7 +87,5 @@ func TestEndToEnd(t *testing.T) {
 			return nil
 		}).
 		Fetch(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
+	be.NilErr(t, err)
 }
