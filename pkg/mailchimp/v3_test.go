@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/carlmjohnson/be"
 	"github.com/carlmjohnson/requests"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 )
@@ -30,13 +31,12 @@ func TestV3(t *testing.T) {
 			interest: true,
 		},
 	}
-	if err := v3.PutUser(ctx, &req); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if err := v3.UserTags(ctx, email, mailchimp.AddTag, "test-tag"); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	if err := v3.UserTags(ctx, email, mailchimp.RemoveTag, "test-tag"); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	err := v3.PutUser(ctx, &req)
+	be.NilErr(t, err)
+
+	err = v3.UserTags(ctx, email, mailchimp.AddTag, "test-tag")
+	be.NilErr(t, err)
+
+	err = v3.UserTags(ctx, email, mailchimp.RemoveTag, "test-tag")
+	be.NilErr(t, err)
 }
