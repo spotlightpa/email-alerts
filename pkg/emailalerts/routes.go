@@ -169,17 +169,6 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		app.redirectErr(w, r, err)
 		return
 	}
-	if req.StateCollege {
-		if err := app.mc.UserTags(
-			r.Context(),
-			emailx.Normalize(req.EmailAddress),
-			mailchimp.AddTag,
-			"state_college",
-		); err != nil {
-			app.redirectErr(w, r, err)
-			return
-		}
-	}
 	dest := validateRedirect(r.FormValue("redirect"), "/thanks.html")
 	http.Redirect(w, r, dest, http.StatusSeeOther)
 }
