@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/carlmjohnson/be"
 	"github.com/carlmjohnson/requests"
@@ -49,11 +50,12 @@ func TestEndToEnd(t *testing.T) {
 		New(requests.TestServerConfig(srv)).
 		Path("/api/subscribe").
 		BodyForm(url.Values{
-			"EMAIL":        []string{"cjohnson@spotlightpa.org"},
-			"FNAME":        []string{"Carl"},
-			"LNAME":        []string{"Johnson"},
-			"investigator": []string{"1"},
-			"shibboleth":   []string{"PA Rocks!"},
+			"EMAIL":                []string{"cjohnson@spotlightpa.org"},
+			"FNAME":                []string{"Carlana"},
+			"LNAME":                []string{"Johnson"},
+			"investigator":         []string{"1"},
+			"shibboleth":           []string{"PA Rocks!"},
+			"shibboleth_timestamp": []string{time.Now().Add(-15 * time.Minute).Format(time.RFC3339)},
 		}).
 		CheckStatus(http.StatusSeeOther).
 		AddValidator(func(res *http.Response) error {
