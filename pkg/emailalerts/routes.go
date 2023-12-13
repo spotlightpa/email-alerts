@@ -176,7 +176,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		Status:       "subscribed",
 		MergeFields:  mergeFields,
 		Interests:    interests,
-		IPOpt:        r.RemoteAddr,
+		IPOpt:        r.Header.Get("X-Forwarded-For"),
 	}); err != nil {
 		app.redirectErr(w, r, err)
 		return
