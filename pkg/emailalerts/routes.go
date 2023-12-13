@@ -89,22 +89,22 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 	decoder := schema.NewDecoder()
 	decoder.IgnoreUnknownKeys(true)
 	var req struct {
-		EmailAddress            string    `schema:"EMAIL"`
-		FirstName               string    `schema:"FNAME"`
-		LastName                string    `schema:"LNAME"`
-		Investigator            bool      `schema:"investigator"`
-		PAPost                  bool      `schema:"papost"`
-		BreakingNews            bool      `schema:"breaking_news"`
-		PALocal                 bool      `schema:"palocal"`
-		BerksCounty             bool      `schema:"berks_county"`
-		TalkOfTheTown           bool      `schema:"talkofthetown"` // Alias for StateCollege
-		StateCollege            bool      `schema:"state_college"`
-		WeekInReview            bool      `schema:"week_in_review"`
-		PennStateAlerts         bool      `schema:"pennstatealert"`
-		CentreCountyDocumenters bool      `schema:"centre_county_documenters"`
-		Honeypot                bool      `schema:"contact"`
-		Shibboleth              string    `schema:"shibboleth"`
-		Timestamp               time.Time `schema:"shibboleth_timestamp"`
+		EmailAddress            string     `schema:"EMAIL"`
+		FirstName               string     `schema:"FNAME"`
+		LastName                string     `schema:"LNAME"`
+		Investigator            bool       `schema:"investigator"`
+		PAPost                  bool       `schema:"papost"`
+		BreakingNews            bool       `schema:"breaking_news"`
+		PALocal                 bool       `schema:"palocal"`
+		BerksCounty             bool       `schema:"berks_county"`
+		TalkOfTheTown           bool       `schema:"talkofthetown"` // Alias for StateCollege
+		StateCollege            bool       `schema:"state_college"`
+		WeekInReview            bool       `schema:"week_in_review"`
+		PennStateAlerts         bool       `schema:"pennstatealert"`
+		CentreCountyDocumenters bool       `schema:"centre_county_documenters"`
+		Honeypot                bool       `schema:"contact"`
+		Shibboleth              string     `schema:"shibboleth"`
+		Timestamp               *time.Time `schema:"shibboleth_timestamp"`
 	}
 	if err := decoder.Decode(&req, r.PostForm); err != nil {
 		app.redirectErr(w, r, err)
@@ -114,7 +114,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		app.redirectErr(w, r, err)
 		return
 	}
-	if req.Shibboleth != "PA Rocks!" || req.Timestamp.IsZero() {
+	if req.Shibboleth != "PA Rocks!" || req.Timestamp == nil {
 		err := resperr.New(http.StatusBadRequest,
 			"missing shibboleth: %q", req.EmailAddress)
 		err = resperr.WithUserMessage(err,
@@ -122,7 +122,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		app.redirectErr(w, r, err)
 		return
 	}
-	if time.Since(req.Timestamp).Abs() > 24*time.Hour {
+	if time.Since(*req.Timestamp).Abs() > 24*time.Hour {
 		err := resperr.New(http.StatusBadRequest,
 			"bad timestamp: %q", req.EmailAddress)
 		err = resperr.WithUserMessage(err,
