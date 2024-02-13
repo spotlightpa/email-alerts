@@ -15,7 +15,6 @@ import (
 	"github.com/carlmjohnson/gateway"
 	"github.com/carlmjohnson/versioninfo"
 	"github.com/getsentry/sentry-go"
-	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 )
@@ -83,16 +82,9 @@ func (app *appEnv) Exec() (err error) {
 		portStr = fmt.Sprintf(":%d", app.port)
 		listener = http.ListenAndServe
 	}
-	routes := sentryhttp.
-		New(sentryhttp.Options{
-			WaitForDelivery: true,
-			Timeout:         5 * time.Second,
-			Repanic:         !app.isLambda(),
-		}).
-		Handle(app.routes())
 
 	app.Printf("starting on %s", portStr)
-	return listener(portStr, routes)
+	return listener(portStr, app.routes())
 }
 
 func (app *appEnv) initSentry(dsn string) error {

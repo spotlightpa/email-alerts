@@ -11,7 +11,8 @@ import (
 
 	"github.com/carlmjohnson/emailx"
 	"github.com/carlmjohnson/resperr"
-	"github.com/carlmjohnson/rootdown"
+	"github.com/earthboundkid/mid"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	"github.com/gorilla/schema"
@@ -19,35 +20,40 @@ import (
 )
 
 func (app *appEnv) routes() http.Handler {
-	var mw rootdown.MiddlewareStack
+	srv := http.NewServeMux()
+	srv.HandleFunc("GET /api/healthcheck", app.ping)
+	srv.HandleFunc("POST /api/subscribe", app.postSubscribeMailchimp)
 	if app.isLambda() {
-		mw.Push(middleware.RequestID)
+		srv.HandleFunc("/", app.notFound)
 	} else {
-		mw.Push(middleware.Recoverer)
+		srv.Handle("/", http.FileServerFS(os.DirFS("./public")))
 	}
-	mw.Push(middleware.RealIP)
-	mw.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
-	mw.Push(app.versionMiddleware)
+
+	var stack mid.Stack
+	stack.Push(sentryhttp.
+		New(sentryhttp.Options{
+			WaitForDelivery: true,
+			Timeout:         5 * time.Second,
+			Repanic:         !app.isLambda(),
+		}).
+		Handle)
+	stack.PushIf(app.isLambda(), middleware.RequestID)
+	stack.PushIf(!app.isLambda(), middleware.Recoverer)
+	stack.Push(middleware.RealIP)
+	stack.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
+	stack.Push(app.versionMiddleware)
 	origin := "https://*.spotlightpa.org"
 	if !app.isLambda() {
 		origin = "*"
 	}
-	mw.Push(cors.Handler(cors.Options{
+	stack.Push(cors.Handler(cors.Options{
 		AllowedOrigins: []string{origin},
 		AllowedHeaders: []string{"*"},
 		AllowedMethods: []string{http.MethodGet, http.MethodPost},
 		MaxAge:         300,
 	}))
 
-	var rr rootdown.Router
-	rr.Get("/api/healthcheck", app.ping, mw...)
-	rr.Post("/api/subscribe", app.postSubscribeMailchimp, mw...)
-	if app.isLambda() {
-		rr.NotFound(app.notFound, mw...)
-	} else {
-		_ = rr.Mount("", "", os.DirFS("./public"), mw...)
-	}
-	return &rr
+	return stack.Handler(srv)
 }
 
 func (app *appEnv) notFound(w http.ResponseWriter, r *http.Request) {
