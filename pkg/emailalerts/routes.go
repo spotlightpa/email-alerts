@@ -107,7 +107,8 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		StateCollege            bool       `schema:"state_college"`
 		WeekInReview            bool       `schema:"week_in_review"`
 		PennStateAlerts         bool       `schema:"pennstatealert"`
-		CentreCountyDocumenters bool       `schema:"centre_county_documenters"`
+		CentreCountyDocumenters bool       `schema:"centre_county_documenters"` // Alias for CentreDocumenters
+		CentreDocumenters       bool       `schema:"centredocumenters"`
 		Honeypot                bool       `schema:"contact"`
 		Shibboleth              string     `schema:"shibboleth"`
 		Timestamp               *time.Time `schema:"shibboleth_timestamp"`
@@ -170,7 +171,8 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 			req.StateCollege,
 		"5c3b89e306": req.WeekInReview,
 		"062c085860": req.PennStateAlerts,
-		"650bf212f7": req.CentreCountyDocumenters,
+		"650bf212f7": req.CentreCountyDocumenters ||
+			req.CentreDocumenters,
 	}
 	maps.DeleteFunc(interests, func(k string, v bool) bool {
 		return !v
