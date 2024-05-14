@@ -126,7 +126,7 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		err := resperr.New(http.StatusBadRequest,
 			"missing shibboleth: %q", req.EmailAddress)
 		err = resperr.WithUserMessage(err,
-			"JavaScript is required to sign up for a mailing list.")
+			"Too fast! Please leave the page open for 15 seconds before signing up.")
 		app.redirectErr(w, r, err)
 		return
 	}
