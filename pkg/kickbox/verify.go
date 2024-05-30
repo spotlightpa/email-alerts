@@ -3,7 +3,6 @@ package kickbox
 import (
 	"context"
 	"log"
-	"slices"
 
 	"github.com/carlmjohnson/requests"
 )
@@ -34,7 +33,7 @@ func (c *Client) Verify(ctx context.Context, email string) bool {
 		return true
 	}
 	c.l.Printf("kickbox: email=%q result=%q", email, obj.Result)
-	return slices.Contains([]string{"deliverable", "unknown"}, obj.Result)
+	return obj.Result != "undeliverable"
 }
 
 // https://docs.kickbox.com/docs/single-verification-api
