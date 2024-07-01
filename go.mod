@@ -17,7 +17,7 @@ require (
 	github.com/getsentry/sentry-go v0.27.0
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/go-chi/cors v1.2.1
-	github.com/gorilla/schema v1.3.0
+	github.com/gorilla/schema v1.4.1
 )
 
 require (
