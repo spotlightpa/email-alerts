@@ -15,6 +15,7 @@ import (
 	"github.com/carlmjohnson/gateway"
 	"github.com/carlmjohnson/versioninfo"
 	"github.com/getsentry/sentry-go"
+	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
 	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 )
@@ -49,6 +50,9 @@ func (app *appEnv) ParseArgs(args []string) error {
 	kb := fs.String("kickbox-api-key", "", "API `key` for Kickbox")
 	sentryDSN := fs.String("sentry-dsn", "", "DSN `pseudo-URL` for Sentry")
 	getMC := mailchimp.FlagVar(fs)
+	acHost := fs.String("active-campaign-host", "", "`host` URL for Active Campaign")
+	acKey := fs.String("active-campaign-api-key", "", "API `key` for Active Campaign")
+
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -60,6 +64,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 	}
 	app.kb = kickbox.New(*kb, app.l)
 	app.mc = getMC(&http.Client{Timeout: 5 * time.Second})
+	app.ac = activecampaign.New(*acHost, *acKey, &http.Client{Timeout: 5 * time.Second})
 	return nil
 }
 
@@ -68,6 +73,7 @@ type appEnv struct {
 	l    *log.Logger
 	mc   mailchimp.V3
 	kb   *kickbox.Client
+	ac   activecampaign.Client
 }
 
 func (app *appEnv) Exec() (err error) {
