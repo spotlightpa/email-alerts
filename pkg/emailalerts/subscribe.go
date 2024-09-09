@@ -40,7 +40,8 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		PennStateAlerts         bool       `schema:"pennstatealert"`
 		CentreCountyDocumenters bool       `schema:"centre_county_documenters"` // Alias for CentreDocumenters
 		CentreDocumenters       bool       `schema:"centredocumenters"`
-		HowWeCare               bool       `schema:"care"`
+		HowWeCare               bool       `schema:"howwecare"` // Alias for care
+		Care                    bool       `schema:"care"`
 		Honeypot                bool       `schema:"contact"`
 		Shibboleth              string     `schema:"shibboleth"`
 		Timestamp               *time.Time `schema:"shibboleth_timestamp"`
