@@ -3,88 +3,17 @@ package emailalerts
 import (
 	"maps"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/carlmjohnson/emailx"
 	"github.com/carlmjohnson/resperr"
-	"github.com/earthboundkid/mid"
-	sentryhttp "github.com/getsentry/sentry-go/http"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 	"github.com/gorilla/schema"
-	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
+	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 )
 
-func (app *appEnv) routes() http.Handler {
-	srv := http.NewServeMux()
-	srv.HandleFunc("GET /api/healthcheck", app.ping)
-	srv.HandleFunc("POST /api/subscribe", app.postSubscribeMailchimp)
-	srv.HandleFunc("POST /api/subscribe-v2", app.postSubscribeActiveCampaign)
-	if app.isLambda() {
-		srv.HandleFunc("/", app.notFound)
-	} else {
-		srv.Handle("/", http.FileServerFS(os.DirFS("./public")))
-	}
-
-	var stack mid.Stack
-	stack.Push(sentryhttp.
-		New(sentryhttp.Options{
-			WaitForDelivery: true,
-			Timeout:         5 * time.Second,
-			Repanic:         !app.isLambda(),
-		}).
-		Handle)
-	stack.PushIf(app.isLambda(), middleware.RequestID)
-	stack.PushIf(!app.isLambda(), middleware.Recoverer)
-	stack.Push(middleware.RealIP)
-	stack.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
-	stack.Push(app.versionMiddleware)
-	origin := "https://*.spotlightpa.org"
-	if !app.isLambda() {
-		origin = "*"
-	}
-	stack.Push(cors.Handler(cors.Options{
-		AllowedOrigins: []string{origin},
-		AllowedHeaders: []string{"*"},
-		AllowedMethods: []string{http.MethodGet, http.MethodPost},
-		MaxAge:         300,
-	}))
-
-	return stack.Handler(srv)
-}
-
-func (app *appEnv) notFound(w http.ResponseWriter, r *http.Request) {
-	app.replyErr(w, r, resperr.NotFound(r))
-}
-
-func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
-	app.Printf("start ping")
-	w.Header().Set("Content-Type", "text/plain")
-	w.Header().Set("Cache-Control", "public, max-age=60")
-	b, err := httputil.DumpRequest(r, true)
-	if err != nil {
-		app.replyErr(w, r, err)
-		return
-	}
-
-	w.Write(b)
-}
-
-func validateRedirect(formVal, fallback string) string {
-	if u, err := url.Parse(formVal); err == nil {
-		if u.Scheme == "https" && strings.HasSuffix(u.Host, ".spotlightpa.org") {
-			return formVal
-		}
-	}
-	return fallback
-}
-
-func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request) {
-	app.Printf("start postSubscribeMailchimp")
+func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Request) {
+	app.Printf("start postSubscribeActiveCampaign")
 
 	if err := r.ParseForm(); err != nil {
 		err = resperr.New(http.StatusBadRequest,
@@ -156,47 +85,60 @@ func (app *appEnv) postSubscribeMailchimp(w http.ResponseWriter, r *http.Request
 		app.redirectErr(w, r, err)
 		return
 	}
-	mergeFields := map[string]string{
-		"FNAME": strings.TrimSpace(req.FirstName),
-		"LNAME": strings.TrimSpace(req.LastName),
-	}
-	maps.DeleteFunc(mergeFields, func(k, v string) bool {
-		return v == ""
-	})
 
-	interests := map[string]bool{
-		"00612929b8": req.Investigator,
-		"8dbf00ee98": req.PAPost,
-		"6137d9281f": req.BreakingNews,
-		"84cfce88c7": req.PALocal,
-		"aa8800a947": req.BerksCounty ||
-			req.Berks,
-		"ff98baba5f": req.TalkOfTheTown ||
+	interests := map[int]bool{
+		1: true, // Master list
+		3: req.PALocal,
+		4: req.PAPost,
+		5: req.Investigator,
+		6: req.HowWeCare,
+		7: req.TalkOfTheTown ||
 			req.StateCollege,
-		"5c3b89e306": req.WeekInReview,
-		"062c085860": req.PennStateAlerts,
-		"650bf212f7": req.CentreCountyDocumenters ||
-			req.CentreDocumenters,
-		"0a68fced65": req.HowWeCare,
+		8: req.PennStateAlerts,
+		9: req.BerksCounty ||
+			req.Berks,
+		// TODO!!
+		// "6137d9281f": req.BreakingNews,
+		// "5c3b89e306": req.WeekInReview,
+		// "650bf212f7": req.CentreCountyDocumenters ||
+		// 	req.CentreDocumenters,
 	}
-	maps.DeleteFunc(interests, func(k string, v bool) bool {
+	maps.DeleteFunc(interests, func(k int, v bool) bool {
 		return !v
 	})
 
-	if err := app.mc.PutUser(r.Context(), &mailchimp.PutUserRequest{
-		EmailAddress: emailx.Normalize(req.EmailAddress),
-		StatusIfNew:  "subscribed",
-		Status:       "subscribed",
-		MergeFields:  mergeFields,
-		Interests:    interests,
-		IPOpt:        r.Header.Get("X-Forwarded-For"),
+	if err := app.ac.CreateContact(r.Context(), activecampaign.Contact{
+		Email:     emailx.Normalize(req.EmailAddress),
+		FirstName: strings.TrimSpace(req.FirstName),
+		LastName:  strings.TrimSpace(req.LastName),
 	}); err != nil {
 		app.redirectErr(w, r, err)
 		return
 	}
 
 	app.l.Printf("subscribed: email=%q", req.EmailAddress)
+	res, err := app.ac.FindContactByEmail(r.Context(), emailx.Normalize(req.EmailAddress))
+	if err != nil {
+		app.redirectErr(w, r, err)
+		return
+	}
+	if len(res.Contacts) != 1 {
+		err := resperr.New(http.StatusBadRequest,
+			"Could not find user ID %q", req.EmailAddress)
+		err = resperr.WithUserMessage(err,
+			"There was a problem while processing your request. Please try again.")
+		app.redirectErr(w, r, err)
+		return
+	}
+	contactID := res.Contacts[0].ID
+	app.l.Printf("found user: id=%d", contactID)
 
+	for listID := range interests {
+		if err := app.ac.AddToList(r.Context(), listID, contactID); err != nil {
+			app.redirectErr(w, r, err)
+			return
+		}
+	}
 	dest := validateRedirect(r.FormValue("redirect"), "/thanks.html")
 	http.Redirect(w, r, dest, http.StatusSeeOther)
 }
