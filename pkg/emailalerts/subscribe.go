@@ -114,7 +114,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	app.l.Printf("subscribed: email=%q", req.EmailAddress)
+	app.l.Printf("subscribed: email=%q interests=%v", req.EmailAddress, interests)
 	res, err := app.ac.FindContactByEmail(r.Context(), emailx.Normalize(req.EmailAddress))
 	if err != nil {
 		app.redirectErr(w, r, err)
