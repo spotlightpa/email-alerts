@@ -98,11 +98,8 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		8: req.PennStateAlerts,
 		9: req.BerksCounty ||
 			req.Berks,
-		// TODO!!
-		// "6137d9281f": req.BreakingNews,
-		// "5c3b89e306": req.WeekInReview,
-		// "650bf212f7": req.CentreCountyDocumenters ||
-		// 	req.CentreDocumenters,
+		10: req.BreakingNews,
+		11: req.WeekInReview,
 	}
 	maps.DeleteFunc(interests, func(k int, v bool) bool {
 		return !v
