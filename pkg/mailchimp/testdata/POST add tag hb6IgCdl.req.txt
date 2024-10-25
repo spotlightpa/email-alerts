@@ -1,6 +1,0 @@
-POST /3.0/lists//members/d41d8cd98f00b204e9800998ecf8427e/tags HTTP/1.1
-Host: .api.mailchimp.com
-Authorization: Basic Og==
-Content-Type: application/json
-
-{"tags":[{"name":"test-tag","status":"active"}]}
