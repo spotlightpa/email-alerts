@@ -3,6 +3,7 @@ package emailalerts
 import (
 	"maps"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -131,7 +132,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 	contactID := res.Contacts[0].ID
 	app.l.Printf("found user: id=%d", contactID)
 
-	for listID := range interests {
+	for _, listID := range slices.Sorted(maps.Keys(interests)) {
 		if err := app.ac.AddToList(r.Context(), listID, contactID); err != nil {
 			app.redirectErr(w, r, err)
 			return
