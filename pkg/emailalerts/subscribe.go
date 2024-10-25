@@ -29,6 +29,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		EmailAddress            string     `schema:"EMAIL"`
 		FirstName               string     `schema:"FNAME"`
 		LastName                string     `schema:"LNAME"`
+		Events                  bool       `schema:"events"`
 		Investigator            bool       `schema:"investigator"`
 		PAPost                  bool       `schema:"papost"`
 		BreakingNews            bool       `schema:"breaking_news"`
@@ -101,6 +102,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 			req.Berks,
 		10: req.BreakingNews,
 		11: req.WeekInReview,
+		13: req.Events,
 	}
 	maps.DeleteFunc(interests, func(k int, v bool) bool {
 		return !v
