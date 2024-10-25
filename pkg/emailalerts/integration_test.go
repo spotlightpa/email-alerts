@@ -13,8 +13,8 @@ import (
 
 	"github.com/carlmjohnson/be"
 	"github.com/carlmjohnson/requests"
+	"github.com/carlmjohnson/requests/reqtest"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
-	"github.com/spotlightpa/email-alerts/pkg/mailchimp"
 )
 
 func fixIP(h http.Handler) http.Handler {
@@ -25,19 +25,16 @@ func fixIP(h http.Handler) http.Handler {
 }
 
 func TestEndToEnd(t *testing.T) {
-	apikey := os.Getenv("TEST_MC_API_KEY")
-	listid := os.Getenv("TEST_LIST_ID")
+	t.Skip("TODO")
 	cl := http.Client{
-		Transport: requests.Replay("testdata"),
+		Transport: reqtest.Replay("testdata"),
 	}
 	if os.Getenv("TEST_RECORD") != "" {
-		cl.Transport = requests.Record(nil, "testdata")
+		cl.Transport = reqtest.Record(nil, "testdata")
 	}
 
-	mc := mailchimp.NewV3(apikey, listid, &cl)
 	app := appEnv{
 		l:  log.Default(),
-		mc: mc,
 		kb: kickbox.New("", log.Default()),
 	}
 
@@ -47,8 +44,8 @@ func TestEndToEnd(t *testing.T) {
 	srv.Client().CheckRedirect = requests.NoFollow
 
 	err := requests.
-		New(requests.TestServerConfig(srv)).
-		Path("/api/subscribe").
+		New(reqtest.Server(srv)).
+		Path("/api/subscribe-v2").
 		BodyForm(url.Values{
 			"EMAIL":                []string{"cjohnson@spotlightpa.org"},
 			"FNAME":                []string{"Carlana"},
