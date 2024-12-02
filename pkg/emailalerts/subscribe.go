@@ -56,7 +56,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		app.redirectErr(w, r, err)
 		return
 	}
-	if req.Shibboleth != "PA Rocks!" || req.Timestamp == nil {
+	if req.Shibboleth != "!skcoR AP" || req.Timestamp == nil {
 		err := resperr.New(http.StatusBadRequest,
 			"missing shibboleth: %q", req.EmailAddress)
 		err = resperr.WithUserMessage(err,
