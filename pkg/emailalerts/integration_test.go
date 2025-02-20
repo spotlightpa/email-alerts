@@ -67,7 +67,7 @@ func TestEndToEnd(t *testing.T) {
 	be.NilErr(t, err)
 
 	err = requests.
-		New(requests.TestServerConfig(srv)).
+		New(reqtest.Server(srv)).
 		Path("/api/subscribe").
 		BodyForm(url.Values{
 			"EMAIL":        []string{""},
