@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/carlmjohnson/emailx"
 	"github.com/carlmjohnson/resperr"
+	"github.com/earthboundkid/emailx/v2"
 	"github.com/gorilla/schema"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 )
