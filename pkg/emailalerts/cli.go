@@ -13,7 +13,7 @@ import (
 
 	"github.com/carlmjohnson/flagx"
 	"github.com/carlmjohnson/gateway"
-	"github.com/carlmjohnson/versioninfo"
+	"github.com/earthboundkid/versioninfo/v2"
 	"github.com/getsentry/sentry-go"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
