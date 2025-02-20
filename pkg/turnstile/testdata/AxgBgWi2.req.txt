@@ -1,0 +1,5 @@
+POST /turnstile/v0/siteverify HTTP/1.1
+Host: challenges.cloudflare.com
+Content-Type: application/json
+
+{"secret":"2x0000000000000000000000000000000AA","response":"abc123","remoteip":"127.0.0.1"}

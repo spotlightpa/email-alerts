@@ -1,0 +1,9 @@
+HTTP/2.0 200 OK
+Alt-Svc: h3=":443"; ma=86400
+Cf-Ray: 91508b106e463b11-IAD
+Content-Type: application/json
+Date: Thu, 20 Feb 2025 18:26:08 GMT
+Server: cloudflare
+Vary: Accept-Encoding
+
+{"success":true,"error-codes":[],"challenge_ts":"2025-02-20T18:26:08.077Z","hostname":"example.com","metadata":{"result_with_testing_key":true}}
