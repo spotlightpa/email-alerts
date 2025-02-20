@@ -17,6 +17,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
+	"github.com/spotlightpa/email-alerts/pkg/turnstile"
 )
 
 const AppName = "email-alerts"
@@ -50,6 +51,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 	sentryDSN := fs.String("sentry-dsn", "", "DSN `pseudo-URL` for Sentry")
 	acHost := fs.String("active-campaign-host", "", "`host` URL for Active Campaign")
 	acKey := fs.String("active-campaign-api-key", "", "API `key` for Active Campaign")
+	turnKey := fs.String("turnstile-secret", "", "API `secret` for CloudFlare Turnstile")
 
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -62,6 +64,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 	}
 	app.kb = kickbox.New(*kb, app.l)
 	app.ac = activecampaign.New(*acHost, *acKey, &http.Client{Timeout: 5 * time.Second})
+	app.tc = turnstile.New(*turnKey, &http.Client{Timeout: 5 * time.Second})
 	return nil
 }
 
@@ -70,6 +73,7 @@ type appEnv struct {
 	l    *log.Logger
 	kb   *kickbox.Client
 	ac   activecampaign.Client
+	tc   turnstile.Client
 }
 
 func (app *appEnv) Exec() (err error) {

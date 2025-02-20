@@ -47,6 +47,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		Honeypot                bool       `schema:"contact"`
 		Shibboleth              string     `schema:"shibboleth"`
 		Timestamp               *time.Time `schema:"shibboleth_timestamp"`
+		Turnstile               string     `schema:"cf-turnstile-response"`
 	}
 	if err := decoder.Decode(&req, r.PostForm); err != nil {
 		app.redirectErr(w, r, err)
@@ -80,11 +81,28 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		app.redirectErr(w, r, err)
 		return
 	}
+	ip, _, _ := strings.Cut(r.RemoteAddr, ":")
+	ok, err := app.tc.Validate(r.Context(), req.Turnstile, ip)
+	if err != nil {
+		err = resperr.WithCodeAndMessage(err, http.StatusBadGateway,
+			"There was a problem connecting to the server.")
+		app.redirectErr(w, r, err)
+		return
+	}
+	if !ok {
+		err := resperr.New(http.StatusBadRequest,
+			"Turnstile rejected %q", req.EmailAddress)
+		err = resperr.WithUserMessage(err,
+			"There was a problem with your request.")
+		app.redirectErr(w, r, err)
+		return
+	}
+
 	if !app.kb.Verify(r.Context(), req.EmailAddress) {
 		err := resperr.New(http.StatusBadRequest,
 			"Kickbox rejected %q", req.EmailAddress)
 		err = resperr.WithUserMessage(err,
-			"There was a problem with your request")
+			"There was a problem with your request.")
 		app.redirectErr(w, r, err)
 		return
 	}
