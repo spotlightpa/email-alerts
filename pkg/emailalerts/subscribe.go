@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/carlmjohnson/resperr"
 	"github.com/earthboundkid/emailx/v2"
+	"github.com/earthboundkid/resperr/v2"
 	"github.com/gorilla/schema"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 )
@@ -60,40 +60,40 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 	if req.Shibboleth != "!skcoR AP" || req.Timestamp == nil {
 		err := resperr.New(http.StatusBadRequest,
 			"missing shibboleth: %q", req.EmailAddress)
-		err = resperr.WithUserMessage(err,
-			"Too fast! Please leave the page open for 15 seconds before signing up.")
+		err = resperr.E{E: err,
+			M: "Too fast! Please leave the page open for 15 seconds before signing up."}
 		app.redirectErr(w, r, err)
 		return
 	}
 	if time.Since(*req.Timestamp).Abs() > 24*time.Hour {
 		err := resperr.New(http.StatusBadRequest,
 			"bad timestamp: %q", req.EmailAddress)
-		err = resperr.WithUserMessage(err,
-			"Page too old. Please reload the window and try again.")
+		err = resperr.E{E: err,
+			M: "Page too old. Please reload the window and try again."}
 		app.redirectErr(w, r, err)
 		return
 	}
 	if req.Honeypot {
 		err := resperr.New(http.StatusBadRequest,
 			"checked honeypot %q", req.EmailAddress)
-		err = resperr.WithUserMessage(err,
-			"There was a problem with your request")
+		err = resperr.E{E: err,
+			M: "There was a problem with your request"}
 		app.redirectErr(w, r, err)
 		return
 	}
 	ip, _, _ := strings.Cut(r.RemoteAddr, ":")
 	ok, err := app.tc.Validate(r.Context(), req.Turnstile, ip)
 	if err != nil {
-		err = resperr.WithCodeAndMessage(err, http.StatusBadGateway,
-			"There was a problem connecting to the server.")
+		err = resperr.E{E: err, S: http.StatusBadGateway,
+			M: "There was a problem connecting to the server."}
 		app.redirectErr(w, r, err)
 		return
 	}
 	if !ok {
 		err := resperr.New(http.StatusBadRequest,
 			"Turnstile rejected %q", req.EmailAddress)
-		err = resperr.WithUserMessage(err,
-			"There was a problem with your request.")
+		err = resperr.E{E: err,
+			M: "There was a problem with your request."}
 		app.redirectErr(w, r, err)
 		return
 	}
@@ -101,8 +101,8 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 	if !app.kb.Verify(r.Context(), req.EmailAddress) {
 		err := resperr.New(http.StatusBadRequest,
 			"Kickbox rejected %q", req.EmailAddress)
-		err = resperr.WithUserMessage(err,
-			"There was a problem with your request.")
+		err = resperr.E{E: err,
+			M: "There was a problem with your request."}
 		app.redirectErr(w, r, err)
 		return
 	}
@@ -144,8 +144,8 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 	if len(res.Contacts) != 1 {
 		err := resperr.New(http.StatusBadRequest,
 			"Could not find user ID %q", req.EmailAddress)
-		err = resperr.WithUserMessage(err,
-			"There was a problem while processing your request. Please try again.")
+		err = resperr.E{E: err,
+			M: "There was a problem while processing your request. Please try again."}
 		app.redirectErr(w, r, err)
 		return
 	}
