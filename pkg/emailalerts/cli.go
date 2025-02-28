@@ -114,6 +114,6 @@ func (app *appEnv) isLambda() bool {
 	return app.port == -1
 }
 
-func (app *appEnv) Printf(format string, v ...interface{}) {
+func (app *appEnv) Printf(format string, v ...any) {
 	app.l.Printf(format, v...)
 }
