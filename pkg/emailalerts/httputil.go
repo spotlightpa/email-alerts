@@ -19,7 +19,7 @@ func (app *appEnv) versionMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-func (app *appEnv) replyJSON(w http.ResponseWriter, r *http.Request, statusCode int, data interface{}) {
+func (app *appEnv) replyJSON(w http.ResponseWriter, r *http.Request, statusCode int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 	enc := json.NewEncoder(w)
@@ -59,7 +59,7 @@ func (app *appEnv) redirectErr(w http.ResponseWriter, r *http.Request, err error
 	http.Redirect(w, r, sorryURL, http.StatusSeeOther)
 }
 
-func errorResponseFrom(err error) (status int, data interface{}) {
+func errorResponseFrom(err error) (status int, data any) {
 	code := resperr.StatusCode(err)
 	msg := resperr.UserMessage(err)
 	return code, struct {
