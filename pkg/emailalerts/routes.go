@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/carlmjohnson/resperr"
 	"github.com/earthboundkid/mid"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/go-chi/chi/v5/middleware"
@@ -53,7 +52,9 @@ func (app *appEnv) routes() http.Handler {
 }
 
 func (app *appEnv) notFound(w http.ResponseWriter, r *http.Request) {
-	app.replyErr(w, r, resperr.NotFound(r))
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusNotFound)
+	w.Write([]byte("HTTP Status 404: Not Found"))
 }
 
 func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {

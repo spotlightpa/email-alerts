@@ -3,8 +3,8 @@ package emailalerts
 import (
 	"strings"
 
-	"github.com/carlmjohnson/resperr"
 	"github.com/earthboundkid/emailx/v2"
+	"github.com/earthboundkid/resperr/v2"
 )
 
 var forbiddenNames = []string{"://"}
