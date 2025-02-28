@@ -81,22 +81,22 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		app.redirectErr(w, r, err)
 		return
 	}
-	ip, _, _ := strings.Cut(r.RemoteAddr, ":")
-	ok, err := app.tc.Validate(r.Context(), req.Turnstile, ip)
-	if err != nil {
-		err = resperr.E{E: err, S: http.StatusBadGateway,
-			M: "There was a problem connecting to the server."}
-		app.redirectErr(w, r, err)
-		return
-	}
-	if !ok {
-		err := resperr.New(http.StatusBadRequest,
-			"Turnstile rejected %q", req.EmailAddress)
-		err = resperr.E{E: err,
-			M: "There was a problem with your request."}
-		app.redirectErr(w, r, err)
-		return
-	}
+	// ip, _, _ := strings.Cut(r.RemoteAddr, ":")
+	// ok, err := app.tc.Validate(r.Context(), req.Turnstile, ip)
+	// if err != nil {
+	// 	err = resperr.E{E: err, S: http.StatusBadGateway,
+	// 		M: "There was a problem connecting to the server."}
+	// 	app.redirectErr(w, r, err)
+	// 	return
+	// }
+	// if !ok {
+	// 	err := resperr.New(http.StatusBadRequest,
+	// 		"Turnstile rejected %q", req.EmailAddress)
+	// 	err = resperr.E{E: err,
+	// 		M: "There was a problem with your request."}
+	// 	app.redirectErr(w, r, err)
+	// 	return
+	// }
 
 	if !app.kb.Verify(r.Context(), req.EmailAddress) {
 		err := resperr.New(http.StatusBadRequest,
