@@ -18,6 +18,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
+	"github.com/spotlightpa/email-alerts/pkg/maxmind"
 	"github.com/spotlightpa/email-alerts/pkg/turnstile"
 )
 
@@ -57,6 +58,8 @@ func (app *appEnv) ParseArgs(args []string) error {
 	acKey := fs.String("active-campaign-api-key", "", "API `key` for Active Campaign")
 	turnKey := fs.String("turnstile-secret", "", "API `secret` for CloudFlare Turnstile")
 	fs.StringVar(&app.signingSecret, "signing-secret", "", "`secret` for signing tokens")
+	fs.StringVar(&app.maxcl.AccountID, "maxmind-account-id", "", "`account id` with MaxMind")
+	fs.StringVar(&app.maxcl.LicenseKey, "maxmind-license-key", "", "`license key` with MaxMind")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -79,6 +82,7 @@ type appEnv struct {
 	kb            *kickbox.Client
 	ac            activecampaign.Client
 	tc            turnstile.Client
+	maxcl         maxmind.Client
 }
 
 func (app *appEnv) Exec() (err error) {
