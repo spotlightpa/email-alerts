@@ -18,6 +18,7 @@ func (app *appEnv) routes() http.Handler {
 	srv := http.NewServeMux()
 	srv.HandleFunc("GET /api/healthcheck", app.ping)
 	srv.HandleFunc("POST /api/subscribe-v2", app.postSubscribeActiveCampaign)
+	srv.Handle("GET /api/token", mid.Controller(app.getToken))
 	if app.isLambda() {
 		srv.HandleFunc("/", app.notFound)
 	} else {
@@ -63,7 +64,7 @@ func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=60")
 	b, err := httputil.DumpRequest(r, true)
 	if err != nil {
-		app.replyErr(w, r, err)
+		app.replyErr(err).ServeHTTP(w, r)
 		return
 	}
 
@@ -77,4 +78,9 @@ func validateRedirect(formVal, fallback string) string {
 		}
 	}
 	return fallback
+}
+
+func (app *appEnv) getToken(w http.ResponseWriter, r *http.Request) http.Handler {
+	// TODO: Check IP first
+	return app.replyJSON(app.createToken(time.Now()))
 }

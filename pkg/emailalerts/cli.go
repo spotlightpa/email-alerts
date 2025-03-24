@@ -9,10 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"time"
 
-	"github.com/carlmjohnson/flagx"
 	"github.com/carlmjohnson/gateway"
+	"github.com/earthboundkid/flagx/v2"
 	"github.com/earthboundkid/versioninfo/v2"
 	"github.com/getsentry/sentry-go"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
@@ -43,16 +44,19 @@ func (app *appEnv) ParseArgs(args []string) error {
 	fs.IntVar(&app.port, "port", -1, "specify a port to use http rather than AWS Lambda")
 
 	app.l = log.New(os.Stderr, AppName+" ", log.LstdFlags)
-	flagx.BoolFunc(fs, "silent", "don't log debug output", func() error {
-		app.l.SetOutput(io.Discard)
-		return nil
+	fs.BoolFunc("silent", "don't log debug output", func(s string) error {
+		v, err := strconv.ParseBool(s)
+		if v {
+			app.l.SetOutput(io.Discard)
+		}
+		return err
 	})
 	kb := fs.String("kickbox-api-key", "", "API `key` for Kickbox")
 	sentryDSN := fs.String("sentry-dsn", "", "DSN `pseudo-URL` for Sentry")
 	acHost := fs.String("active-campaign-host", "", "`host` URL for Active Campaign")
 	acKey := fs.String("active-campaign-api-key", "", "API `key` for Active Campaign")
 	turnKey := fs.String("turnstile-secret", "", "API `secret` for CloudFlare Turnstile")
-
+	fs.StringVar(&app.signingSecret, "signing-secret", "", "`secret` for signing tokens")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -69,11 +73,12 @@ func (app *appEnv) ParseArgs(args []string) error {
 }
 
 type appEnv struct {
-	port int
-	l    *log.Logger
-	kb   *kickbox.Client
-	ac   activecampaign.Client
-	tc   turnstile.Client
+	port          int
+	signingSecret string
+	l             *log.Logger
+	kb            *kickbox.Client
+	ac            activecampaign.Client
+	tc            turnstile.Client
 }
 
 func (app *appEnv) Exec() (err error) {
