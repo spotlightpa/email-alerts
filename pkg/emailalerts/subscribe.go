@@ -2,6 +2,7 @@ package emailalerts
 
 import (
 	"maps"
+	"net"
 	"net/http"
 	"slices"
 	"strings"
@@ -106,6 +107,21 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		app.redirectErr(w, r, err)
 		return
 	}
+
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	app.l.Println("looking up IP", ip)
+	ok, err := app.maxcl.IPInCountry(r.Context(), http.DefaultClient, ip,
+		"US", "CA", "UK", "PR")
+	if err != nil {
+		app.redirectErr(w, r, err)
+		return
+	}
+	if !ok {
+		app.redirectErr(w, r, resperr.E{
+			M: "Sorry, due to spam concerns, we are not accept international subscribers at this time."})
+		return
+	}
+	app.l.Println("subscribing user", req.EmailAddress)
 
 	interests := map[int]bool{
 		1: true, // Master list
