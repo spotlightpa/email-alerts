@@ -5,10 +5,10 @@ go 1.24
 require (
 	github.com/carlmjohnson/be v0.24.1
 	github.com/carlmjohnson/exitcode v0.20.2
-	github.com/carlmjohnson/flagx v0.22.2
 	github.com/carlmjohnson/gateway v1.22.2
 	github.com/carlmjohnson/requests v0.24.3
 	github.com/earthboundkid/emailx/v2 v2.24.1
+	github.com/earthboundkid/flagx/v2 v2.25.1
 	github.com/earthboundkid/mid v0.24.1
 	github.com/earthboundkid/resperr/v2 v2.25.1
 	github.com/earthboundkid/versioninfo/v2 v2.24.1
