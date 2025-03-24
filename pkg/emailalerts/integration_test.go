@@ -14,6 +14,7 @@ import (
 	"github.com/carlmjohnson/be"
 	"github.com/carlmjohnson/requests"
 	"github.com/carlmjohnson/requests/reqtest"
+	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
 )
 
@@ -24,8 +25,8 @@ func fixIP(h http.Handler) http.Handler {
 	})
 }
 
-func TestEndToEnd(t *testing.T) {
-	t.Skip("TODO")
+func TestEndToEndOld(t *testing.T) {
+	t.Skip("TODO, fixme?")
 	cl := http.Client{
 		Transport: reqtest.Replay("testdata"),
 	}
@@ -36,6 +37,7 @@ func TestEndToEnd(t *testing.T) {
 	app := appEnv{
 		l:  log.Default(),
 		kb: kickbox.New("", log.Default()),
+		ac: activecampaign.New("", "", nil),
 	}
 
 	srv := httptest.NewServer(fixIP(app.routes()))
@@ -51,7 +53,7 @@ func TestEndToEnd(t *testing.T) {
 			"FNAME":                []string{"Carlana"},
 			"LNAME":                []string{"Johnson"},
 			"investigator":         []string{"1"},
-			"shibboleth":           []string{"PA Rocks!"},
+			"shibboleth":           []string{"!skcoR AP"},
 			"shibboleth_timestamp": []string{time.Now().Add(-15 * time.Minute).Format(time.RFC3339)},
 		}).
 		CheckStatus(http.StatusSeeOther).
@@ -87,4 +89,24 @@ func TestEndToEnd(t *testing.T) {
 		}).
 		Fetch(context.Background())
 	be.NilErr(t, err)
+}
+
+func TestEndToEnd(t *testing.T) {
+	app := appEnv{
+		l: log.Default(),
+	}
+
+	srv := httptest.NewServer(fixIP(app.routes()))
+	defer srv.Close()
+
+	var data struct {
+		Data string
+	}
+	err := requests.
+		New(reqtest.Server(srv)).
+		Path("/api/token").
+		ToJSON(&data).
+		Fetch(t.Context())
+	be.NilErr(t, err)
+	be.In(t, ".", data.Data)
 }
