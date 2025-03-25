@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/earthboundkid/mid"
 	"github.com/earthboundkid/resperr/v2"
 	"github.com/earthboundkid/versioninfo/v2"
 	"github.com/getsentry/sentry-go"
@@ -150,4 +151,14 @@ func (app *appEnv) verifyToken(now time.Time, token string) bool {
 	// Check that it is inside the window
 	// Prevents credential reuse
 	return now.After(ts) && ts.Add(validityWindow).After(now)
+}
+
+func timeoutMiddleware(timeout time.Duration) mid.Middleware {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			ctx, stop := context.WithTimeout(r.Context(), timeout)
+			defer stop()
+			h.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
 }

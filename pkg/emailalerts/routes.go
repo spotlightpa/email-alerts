@@ -37,6 +37,7 @@ func (app *appEnv) routes() http.Handler {
 	stack.PushIf(!app.isLambda(), middleware.Recoverer)
 	stack.Push(middleware.RealIP)
 	stack.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
+	stack.Push(timeoutMiddleware(9 * time.Second))
 	stack.Push(app.versionMiddleware)
 	origin := "https://*.spotlightpa.org"
 	if !app.isLambda() {
