@@ -2,7 +2,6 @@ package emailalerts
 
 import (
 	"maps"
-	"net"
 	"net/http"
 	"slices"
 	"strings"
@@ -108,7 +107,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	ip := r.RemoteAddr
 	app.l.Println("looking up IP", ip)
 	ok, err := app.maxcl.IPInCountry(r.Context(), http.DefaultClient, ip,
 		"US", "CA", "UK", "PR")
