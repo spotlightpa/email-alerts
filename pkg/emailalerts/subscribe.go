@@ -109,7 +109,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 
 	ip := r.RemoteAddr
 	app.l.Println("looking up IP", ip)
-	ok, err := app.maxcl.IPInCountry(r.Context(), http.DefaultClient, ip,
+	ok, err := app.maxcl.IPInCountry(r.Context(), ip,
 		"US", "CA", "UK", "PR")
 	if err != nil {
 		app.redirectErr(w, r, err)
@@ -221,7 +221,7 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 
 	ip := r.RemoteAddr
 	app.l.Println("looking up IP", ip)
-	ok, err := app.maxcl.IPInCountry(r.Context(), http.DefaultClient, ip,
+	ok, err := app.maxcl.IPInCountry(r.Context(), ip,
 		"US", "CA", "UK", "PR")
 	if err != nil {
 		return app.replyErr(err)

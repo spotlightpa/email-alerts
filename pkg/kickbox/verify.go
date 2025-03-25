@@ -3,36 +3,39 @@ package kickbox
 import (
 	"context"
 	"log"
+	"net/http"
 
 	"github.com/carlmjohnson/requests"
 )
 
 type Client struct {
 	apiKey string
+	cl     *http.Client
 	l      *log.Logger
 }
 
-func New(apiKey string, l *log.Logger) *Client {
-	return &Client{apiKey, l}
+func New(apiKey string, l *log.Logger, cl *http.Client) *Client {
+	return &Client{apiKey, cl, l}
 }
 
-func (c *Client) Verify(ctx context.Context, email string) bool {
-	if c.apiKey == "" {
-		c.l.Print("kickbox: warning, no API key set")
+func (kbc *Client) Verify(ctx context.Context, email string) bool {
+	if kbc.apiKey == "" {
+		kbc.l.Print("kickbox: warning, no API key set")
 		return true
 	}
 	var obj response
 	err := requests.
 		URL("https://api.kickbox.com/v2/verify").
-		Param("apikey", c.apiKey).
+		Client(kbc.cl).
+		Param("apikey", kbc.apiKey).
 		Param("email", email).
 		ToJSON(&obj).
 		Fetch(ctx)
 	if err != nil {
-		c.l.Printf("bad response from kickbox: err=%v", err)
+		kbc.l.Printf("bad response from kickbox: err=%v", err)
 		return true
 	}
-	c.l.Printf("kickbox: email=%q result=%q", email, obj.Result)
+	kbc.l.Printf("kickbox: email=%q result=%q", email, obj.Result)
 	return obj.Result != "undeliverable"
 }
 

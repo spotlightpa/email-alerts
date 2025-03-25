@@ -36,7 +36,7 @@ func TestEndToEndOld(t *testing.T) {
 
 	app := appEnv{
 		l:  log.Default(),
-		kb: kickbox.New("", log.Default()),
+		kb: kickbox.New("", log.Default(), nil),
 		ac: activecampaign.New("", "", nil),
 	}
 
