@@ -7,9 +7,13 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
+	"mime"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/earthboundkid/mid"
@@ -161,4 +165,61 @@ func timeoutMiddleware(timeout time.Duration) mid.Middleware {
 			h.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+func (app *appEnv) readJSON(r *http.Request, dst any) error {
+	// Thanks to https://www.alexedwards.net/blog/how-to-properly-parse-a-json-request-body
+	if ct := r.Header.Get("Content-Type"); ct != "" {
+		value, _, _ := mime.ParseMediaType(ct)
+		if value != "application/json" {
+			return resperr.New(http.StatusUnsupportedMediaType,
+				"request Content-Type must be application/json; got %s",
+				ct)
+		}
+	}
+
+	dec := json.NewDecoder(r.Body)
+	dec.DisallowUnknownFields()
+
+	err := dec.Decode(&dst)
+	if err != nil {
+		var (
+			syntaxError        *json.SyntaxError
+			unmarshalTypeError *json.UnmarshalTypeError
+			maxBytesError      *http.MaxBytesError
+		)
+
+		switch {
+		case errors.As(err, &syntaxError):
+			return resperr.E{E: err, M: fmt.Sprintf("Request body contains badly-formed JSON (at position %d)", syntaxError.Offset)}
+
+		case errors.Is(err, io.ErrUnexpectedEOF):
+			return resperr.E{E: err, M: "Request body contains badly-formed JSON"}
+
+		case errors.As(err, &unmarshalTypeError):
+			return resperr.E{E: err, M: fmt.Sprintf("Request body contains an invalid value for the %q field (at position %d)", unmarshalTypeError.Field, unmarshalTypeError.Offset)}
+
+		case strings.HasPrefix(err.Error(), "json: unknown field "):
+			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field ")
+			return resperr.E{E: err, M: fmt.Sprintf("Request body contains unknown field %s", fieldName)}
+
+		case errors.Is(err, io.EOF):
+			return resperr.E{M: "Request body contains badly-formed JSON"}
+
+		case errors.As(err, &maxBytesError):
+			return resperr.New(http.StatusRequestEntityTooLarge,
+				"request body exceeds max size %d: %w",
+				maxBytesError.Limit, err)
+
+		default:
+			return resperr.New(http.StatusBadRequest, "readJSON: %w", err)
+		}
+	}
+
+	var discard any
+	if err := dec.Decode(&discard); !errors.Is(err, io.EOF) {
+		return resperr.E{M: "Request body must only contain a single JSON object"}
+	}
+
+	return nil
 }
