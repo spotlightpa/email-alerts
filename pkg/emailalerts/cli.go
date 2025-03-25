@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/carlmjohnson/gateway"
+	"github.com/carlmjohnson/requests"
 	"github.com/earthboundkid/flagx/v2"
 	"github.com/earthboundkid/versioninfo/v2"
 	"github.com/getsentry/sentry-go"
@@ -58,8 +59,8 @@ func (app *appEnv) ParseArgs(args []string) error {
 	acKey := fs.String("active-campaign-api-key", "", "API `key` for Active Campaign")
 	turnKey := fs.String("turnstile-secret", "", "API `secret` for CloudFlare Turnstile")
 	fs.StringVar(&app.signingSecret, "signing-secret", "", "`secret` for signing tokens")
-	fs.StringVar(&app.maxcl.AccountID, "maxmind-account-id", "", "`account id` with MaxMind")
-	fs.StringVar(&app.maxcl.LicenseKey, "maxmind-license-key", "", "`license key` with MaxMind")
+	accountid := fs.String("maxmind-account-id", "", "`account id` with MaxMind")
+	licensekey := fs.String("maxmind-license-key", "", "`license key` with MaxMind")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -69,9 +70,23 @@ func (app *appEnv) ParseArgs(args []string) error {
 	if err := app.initSentry(*sentryDSN); err != nil {
 		return err
 	}
-	app.kb = kickbox.New(*kb, app.l)
-	app.ac = activecampaign.New(*acHost, *acKey, &http.Client{Timeout: 5 * time.Second})
-	app.tc = turnstile.New(*turnKey, &http.Client{Timeout: 5 * time.Second})
+	cl := &http.Client{
+		Timeout: 5 * time.Second,
+		Transport: requests.LogTransport(nil,
+			func(req *http.Request, res *http.Response, err error, duration time.Duration) {
+				if err == nil {
+					app.l.Printf("req.host=%q res.code=%d res.duration=%v",
+						req.URL.Hostname(), res.StatusCode, duration)
+				} else {
+					app.l.Printf("req.host=%q err=%v res.duration=%v",
+						req.URL.Hostname(), err, duration)
+				}
+			}),
+	}
+	app.kb = kickbox.New(*kb, app.l, cl)
+	app.ac = activecampaign.New(*acHost, *acKey, cl)
+	app.tc = turnstile.New(*turnKey, cl)
+	app.maxcl = maxmind.New(*accountid, *licensekey, cl)
 	return nil
 }
 

@@ -10,10 +10,15 @@ import (
 )
 
 type Client struct {
-	AccountID, LicenseKey string
+	accountID, licenseKey string
+	cl                    *http.Client
 }
 
-func (mc Client) IPInCountry(ctx context.Context, cl *http.Client, ip string, countrycodes ...string) (bool, error) {
+func New(accountID, licenseKey string, cl *http.Client) Client {
+	return Client{accountID, licenseKey, cl}
+}
+
+func (mc Client) IPInCountry(ctx context.Context, ip string, countrycodes ...string) (bool, error) {
 	var resp struct {
 		Country struct {
 			IsoCode string `json:"iso_code"`
@@ -22,8 +27,8 @@ func (mc Client) IPInCountry(ctx context.Context, cl *http.Client, ip string, co
 	err := requests.
 		URL("https://geoip.maxmind.com/geoip/v2.1/country/").
 		Path(ip).
-		Client(cl).
-		BasicAuth(mc.AccountID, mc.LicenseKey).
+		Client(mc.cl).
+		BasicAuth(mc.accountID, mc.licenseKey).
 		ToJSON(&resp).
 		Fetch(ctx)
 	if err != nil {
