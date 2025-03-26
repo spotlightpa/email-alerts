@@ -1,0 +1,30 @@
+HTTP/2.0 201 Created
+Access-Control-Allow-Headers: Content-Type, origin, x-requested-with
+Access-Control-Allow-Methods: POST, GET
+Access-Control-Allow-Origin: *
+Cache-Control: no-store, no-cache, must-revalidate,no-cache, private
+Cf-Cache-Status: DYNAMIC
+Cf-Ray: 8bef38b02b728f10-IAD
+Content-Type: application/json
+Date: Fri, 06 Sep 2024 14:41:42 GMT
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Pragma: no-cache
+Server: cloudflare
+X-Content-Type-Options: nosniff
+X-Envoy-Upstream-Service-Time: 407
+
+{
+  "contact": {
+    "cdate": "2024-09-06T09:41:42-05:00",
+    "email": "x@y",
+    "firstName": "",
+    "hash": "91b6151204141a811c10f2dd805f3d9a",
+    "id": "1",
+    "lastName": "",
+    "organization": null,
+    "orgid": "0",
+    "orgname": "",
+    "phone": "",
+    "udate": "2024-09-06T09:41:42-05:00"
+  }
+}

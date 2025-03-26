@@ -7,7 +7,7 @@ import (
 	"github.com/earthboundkid/resperr/v2"
 )
 
-var forbiddenNames = []string{"://"}
+var forbiddenNames = []string{`://`}
 
 func validate(email, first, last string) error {
 	var v resperr.Validator

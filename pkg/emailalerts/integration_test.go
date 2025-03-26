@@ -16,6 +16,7 @@ import (
 	"github.com/carlmjohnson/requests/reqtest"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
+	"github.com/spotlightpa/email-alerts/pkg/maxmind"
 )
 
 func fixIP(h http.Handler) http.Handler {
@@ -92,21 +93,64 @@ func TestEndToEndOld(t *testing.T) {
 }
 
 func TestEndToEnd(t *testing.T) {
+	cl := http.Client{}
+	cl.Transport = reqtest.Replay("testdata")
 	app := appEnv{
-		l: log.Default(),
+		l:     log.Default(),
+		kb:    kickbox.New("", log.Default(), &cl),
+		ac:    activecampaign.New("", "", &cl),
+		maxcl: maxmind.New("", "", &cl),
 	}
 
 	srv := httptest.NewServer(fixIP(app.routes()))
 	defer srv.Close()
 
-	var data struct {
-		Data string
+	var token string
+	rb := requests.New(reqtest.Server(srv))
+
+	{ // Should fail if no JSON
+		err := rb.Clone().
+			Path("/api/subscribe-v3").
+			BodyJSON(nil).
+			CheckStatus(400).
+			Fetch(t.Context())
+		be.NilErr(t, err)
 	}
-	err := requests.
-		New(reqtest.Server(srv)).
-		Path("/api/token").
-		ToJSON(&data).
-		Fetch(t.Context())
-	be.NilErr(t, err)
-	be.In(t, ".", data.Data)
+	{ // Should fail if no token
+		var res any
+		err := rb.Clone().
+			Path("/api/subscribe-v3").
+			BodyJSON(map[string]any{
+				"EMAIL": "x@y.com",
+			}).
+			CheckStatus(400).
+			ToJSON(&res).
+			Fetch(t.Context())
+		be.NilErr(t, err)
+	}
+	{ // Get a token
+		var data struct {
+			Data string
+		}
+		err := rb.Clone().
+			Path("/api/token").
+			ToJSON(&data).
+			Fetch(t.Context())
+		be.NilErr(t, err)
+		be.In(t, ".", data.Data)
+		token = data.Data
+	}
+	{ // Use token for request
+		var res any
+		err := rb.Clone().
+			Path("/api/subscribe-v3").
+			BodyJSON(map[string]any{
+				"EMAIL": "x@y.com",
+				"token": token,
+			}).
+			CheckStatus(200).
+			ToJSON(&res).
+			Fetch(t.Context())
+		be.NilErr(t, err)
+	}
 }

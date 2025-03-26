@@ -1,0 +1,5 @@
+POST /api/3/contactLists HTTP/1.1
+Api-Token: 
+Content-Type: application/json
+
+{"contactList":{"list":1,"contact":1,"status":1}}
