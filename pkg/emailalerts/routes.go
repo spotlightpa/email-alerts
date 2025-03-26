@@ -11,7 +11,7 @@ import (
 	"github.com/earthboundkid/mid"
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
+	"github.com/jub0bs/cors"
 )
 
 func (app *appEnv) routes() http.Handler {
@@ -40,16 +40,11 @@ func (app *appEnv) routes() http.Handler {
 	stack.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
 	stack.Push(timeoutMiddleware(9 * time.Second))
 	stack.Push(app.versionMiddleware)
-	// origin := "https://*.spotlightpa.org"
-	// if !app.isLambda() {
-	// 	origin = "*"
-	// }
-	stack.Push(cors.Handler(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedHeaders: []string{"*"},
-		AllowedMethods: []string{http.MethodGet, http.MethodPost},
-		MaxAge:         300,
-	}))
+	stack.Push(must(cors.NewMiddleware(cors.Config{
+		Origins:         []string{"*"},
+		Methods:         []string{http.MethodGet, http.MethodPost},
+		MaxAgeInSeconds: int((5 * time.Minute).Seconds()),
+	})).Wrap)
 
 	return stack.Handler(srv)
 }
