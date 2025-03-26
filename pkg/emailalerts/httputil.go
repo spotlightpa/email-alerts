@@ -182,8 +182,6 @@ func (app *appEnv) readJSON(r *http.Request, dst any) error {
 	}
 
 	dec := json.NewDecoder(r.Body)
-	dec.DisallowUnknownFields()
-
 	err := dec.Decode(&dst)
 	if err != nil {
 		var (
