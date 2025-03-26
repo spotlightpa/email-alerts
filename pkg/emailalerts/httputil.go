@@ -37,30 +37,33 @@ type jsonData struct {
 	Details    map[string][]string `json:"errors,omitzero"`
 }
 
-func (app *appEnv) writeJSON(obj jsonData) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(obj.StatusCode)
-		obj.Status = http.StatusText(obj.StatusCode)
-		enc := json.NewEncoder(w)
-		if err := enc.Encode(obj); err != nil {
-			app.logErr(r.Context(), err)
-		}
-	})
+func (app *appEnv) writeJSON(w http.ResponseWriter, r *http.Request, obj jsonData) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(obj.StatusCode)
+	obj.Status = http.StatusText(obj.StatusCode)
+	enc := json.NewEncoder(w)
+	if err := enc.Encode(obj); err != nil {
+		app.logErr(r.Context(), err)
+	}
 }
 
 func (app *appEnv) replyJSON(data any) http.Handler {
-	return app.writeJSON(jsonData{
-		Data:       data,
-		StatusCode: http.StatusOK,
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.writeJSON(w, r, jsonData{
+			Data:       data,
+			StatusCode: http.StatusOK,
+		})
 	})
 }
 
 func (app *appEnv) replyErr(err error) http.Handler {
-	return app.writeJSON(jsonData{
-		StatusCode: resperr.StatusCode(err),
-		Error:      resperr.UserMessage(err),
-		Details:    resperr.ValidationErrors(err),
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.logErr(r.Context(), err)
+		app.writeJSON(w, r, jsonData{
+			StatusCode: resperr.StatusCode(err),
+			Error:      resperr.UserMessage(err),
+			Details:    resperr.ValidationErrors(err),
+		})
 	})
 }
 

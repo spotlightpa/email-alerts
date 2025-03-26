@@ -1,0 +1,50 @@
+HTTP/2.0 200 OK
+Content-Type: application/json
+
+{
+  "contacts": [
+    {
+      "accountContacts": [],
+      "adate": null,
+      "anonymized": "0",
+      "bounced_date": null,
+      "bounced_hard": "0",
+      "bounced_soft": "0",
+      "cdate": "2024-09-06T09:41:42-05:00",
+      "created_by": null,
+      "created_timestamp": "2024-09-06 09:41:42",
+      "created_utc_timestamp": "2024-09-06 09:41:42",
+      "deleted": "0",
+      "deleted_at": null,
+      "edate": null,
+      "email": "x@y.com",
+      "email_domain": "spotlightpa.org",
+      "email_local": "",
+      "firstName": "",
+      "gravatar": "0",
+      "hash": "91b6151204141a811c10f2dd805f3d9a",
+      "id": "1",
+      "ip": "0",
+      "lastName": "",
+      "last_click_date": null,
+      "last_mpp_open_date": null,
+      "last_open_date": null,
+      "mpp_tracking": "0",
+      "organization": null,
+      "orgid": "0",
+      "orgname": "",
+      "phone": "",
+      "rating_tstamp": null,
+      "scoreValues": [],
+      "segmentio_id": "",
+      "sentcnt": "0",
+      "socialdata_lastcheck": null,
+      "ua": null,
+      "udate": "2024-09-06T09:41:42-05:00",
+      "updated_by": null,
+      "updated_timestamp": "2024-09-06 09:41:42",
+      "updated_utc_timestamp": "2024-09-06 09:41:42"
+    }
+  ],
+  "scoreValues": []
+}
