@@ -40,12 +40,12 @@ func (app *appEnv) routes() http.Handler {
 	stack.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
 	stack.Push(timeoutMiddleware(9 * time.Second))
 	stack.Push(app.versionMiddleware)
-	origin := "https://*.spotlightpa.org"
-	if !app.isLambda() {
-		origin = "*"
-	}
+	// origin := "https://*.spotlightpa.org"
+	// if !app.isLambda() {
+	// 	origin = "*"
+	// }
 	stack.Push(cors.Handler(cors.Options{
-		AllowedOrigins: []string{origin},
+		AllowedOrigins: []string{"*"},
 		AllowedHeaders: []string{"*"},
 		AllowedMethods: []string{http.MethodGet, http.MethodPost},
 		MaxAge:         300,
