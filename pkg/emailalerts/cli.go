@@ -71,17 +71,8 @@ func (app *appEnv) ParseArgs(args []string) error {
 		return err
 	}
 	cl := &http.Client{
-		Timeout: 5 * time.Second,
-		Transport: requests.LogTransport(nil,
-			func(req *http.Request, res *http.Response, err error, duration time.Duration) {
-				if err == nil {
-					app.l.Printf("req.host=%q res.code=%d res.duration=%v",
-						req.URL.Hostname(), res.StatusCode, duration)
-				} else {
-					app.l.Printf("req.host=%q err=%v res.duration=%v",
-						req.URL.Hostname(), err, duration)
-				}
-			}),
+		Timeout:   5 * time.Second,
+		Transport: requests.LogTransport(nil, app.logReq),
 	}
 	app.kb = kickbox.New(*kb, app.l, cl)
 	app.ac = activecampaign.New(*acHost, *acKey, cl)
