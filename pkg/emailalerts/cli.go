@@ -77,7 +77,7 @@ func (app *appEnv) ParseArgs(args []string) error {
 	app.kb = kickbox.New(*kb, app.l, cl)
 	app.ac = activecampaign.New(*acHost, *acKey, cl)
 	app.tc = turnstile.New(*turnKey, cl)
-	app.maxcl = maxmind.New(*accountid, *licensekey, cl)
+	app.maxcl = maxmind.New(*accountid, *licensekey, cl, app.l)
 	return nil
 }
 

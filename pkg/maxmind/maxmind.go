@@ -2,6 +2,7 @@ package maxmind
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"slices"
 
@@ -12,10 +13,11 @@ import (
 type Client struct {
 	accountID, licenseKey string
 	cl                    *http.Client
+	l                     *log.Logger
 }
 
-func New(accountID, licenseKey string, cl *http.Client) Client {
-	return Client{accountID, licenseKey, cl}
+func New(accountID, licenseKey string, cl *http.Client, l *log.Logger) Client {
+	return Client{accountID, licenseKey, cl, l}
 }
 
 func (mc Client) IPInCountry(ctx context.Context, ip string, countrycodes ...string) (bool, error) {
@@ -32,8 +34,9 @@ func (mc Client) IPInCountry(ctx context.Context, ip string, countrycodes ...str
 		ToJSON(&resp).
 		Fetch(ctx)
 	if err != nil {
+		mc.l.Printf("maxmind.Client.IPInCountry(%q): got err: %v", ip, err)
 		return false, resperr.New(http.StatusBadGateway, "connecting to maxmind: %w", err)
 	}
-
+	mc.l.Printf("maxmind.Client.IPInCountry(%q): got: %v", ip, resp.Country.IsoCode)
 	return slices.Contains(countrycodes, resp.Country.IsoCode), nil
 }
