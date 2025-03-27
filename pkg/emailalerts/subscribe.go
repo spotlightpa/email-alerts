@@ -178,7 +178,7 @@ func (app *appEnv) postSubscribeActiveCampaign(w http.ResponseWriter, r *http.Re
 }
 
 func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) http.Handler {
-	app.Printf("start postSubscribeActiveCampaign")
+	app.Printf("start postSubscribeJSON")
 
 	var req struct {
 		EmailAddress            string `json:"EMAIL"`
