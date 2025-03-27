@@ -22,6 +22,16 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
+func (app *appEnv) logReq(req *http.Request, res *http.Response, err error, duration time.Duration) {
+	if err == nil {
+		app.l.Printf("req.host=%q res.code=%d res.duration=%v",
+			req.URL.Hostname(), res.StatusCode, duration)
+	} else {
+		app.l.Printf("req.host=%q err=%v res.duration=%v",
+			req.URL.Hostname(), err, duration)
+	}
+}
+
 func (app *appEnv) versionMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("SpotlightPA-App-Version", versioninfo.Revision)
