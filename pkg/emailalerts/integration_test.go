@@ -99,7 +99,7 @@ func TestEndToEnd(t *testing.T) {
 		l:     log.Default(),
 		kb:    kickbox.New("", log.Default(), &cl),
 		ac:    activecampaign.New("", "", &cl),
-		maxcl: maxmind.New("", "", &cl),
+		maxcl: maxmind.New("", "", &cl, log.Default()),
 	}
 
 	srv := httptest.NewServer(fixIP(app.routes()))
