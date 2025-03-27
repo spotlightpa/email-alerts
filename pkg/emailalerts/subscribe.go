@@ -198,7 +198,6 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 		CentreDocumenters       bool   `json:"centredocumenters"`
 		HowWeCare               bool   `json:"howwecare"` // Alias for care
 		Care                    bool   `json:"care"`
-		Honeypot                bool   `json:"contact"`
 		Token                   string `json:"token"`
 	}
 	if err := app.readJSON(r, &req); err != nil {
