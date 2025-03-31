@@ -44,7 +44,7 @@ type jsonData struct {
 	Status     string              `json:"status"`
 	Data       any                 `json:"data,omitzero"`
 	Error      string              `json:"error,omitzero"`
-	Details    map[string][]string `json:"errors,omitzero"`
+	Details    map[string][]string `json:"details,omitzero"`
 }
 
 func (app *appEnv) writeJSON(w http.ResponseWriter, r *http.Request, obj jsonData) {

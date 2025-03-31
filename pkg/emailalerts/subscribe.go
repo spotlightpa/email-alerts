@@ -183,21 +183,21 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 		EmailAddress            string `json:"EMAIL"`
 		FirstName               string `json:"FNAME"`
 		LastName                string `json:"LNAME"`
-		Events                  bool   `json:"events"`
-		Investigator            bool   `json:"investigator"`
-		PAPost                  bool   `json:"papost"`
-		BreakingNews            bool   `json:"breaking_news"`
-		PALocal                 bool   `json:"palocal"`
-		BerksCounty             bool   `json:"berks_county"`
-		Berks                   bool   `json:"berks"`         // Alias for BerksCounty
-		TalkOfTheTown           bool   `json:"talkofthetown"` // Alias for StateCollege
-		StateCollege            bool   `json:"state_college"`
-		WeekInReview            bool   `json:"week_in_review"`
-		PennStateAlerts         bool   `json:"pennstatealert"`
-		CentreCountyDocumenters bool   `json:"centre_county_documenters"` // Alias for CentreDocumenters
-		CentreDocumenters       bool   `json:"centredocumenters"`
-		HowWeCare               bool   `json:"howwecare"` // Alias for care
-		Care                    bool   `json:"care"`
+		Events                  string `json:"events"`
+		Investigator            string `json:"investigator"`
+		PAPost                  string `json:"papost"`
+		BreakingNews            string `json:"breaking_news"`
+		PALocal                 string `json:"palocal"`
+		BerksCounty             string `json:"berks_county"`
+		Berks                   string `json:"berks"`         // Alias for BerksCounty
+		TalkOfTheTown           string `json:"talkofthetown"` // Alias for StateCollege
+		StateCollege            string `json:"state_college"`
+		WeekInReview            string `json:"week_in_review"`
+		PennStateAlerts         string `json:"pennstatealert"`
+		CentreCountyDocumenters string `json:"centre_county_documenters"` // Alias for CentreDocumenters
+		CentreDocumenters       string `json:"centredocumenters"`
+		HowWeCare               string `json:"howwecare"` // Alias for care
+		Care                    string `json:"care"`
 		Token                   string `json:"token"`
 	}
 	if err := app.readJSON(r, &req); err != nil {
@@ -231,18 +231,18 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 
 	interests := map[int]bool{
 		1: true, // Master list
-		3: req.PALocal,
-		4: req.PAPost,
-		5: req.Investigator,
-		6: req.HowWeCare,
-		7: req.TalkOfTheTown ||
-			req.StateCollege,
-		8: req.PennStateAlerts,
-		9: req.BerksCounty ||
-			req.Berks,
-		10: req.BreakingNews,
-		11: req.WeekInReview,
-		13: req.Events,
+		3: req.PALocal == "1",
+		4: req.PAPost == "1",
+		5: req.Investigator == "1",
+		6: req.HowWeCare == "1",
+		7: req.TalkOfTheTown == "1" ||
+			req.StateCollege == "1",
+		8: req.PennStateAlerts == "1",
+		9: req.BerksCounty == "1" ||
+			req.Berks == "1",
+		10: req.BreakingNews == "1",
+		11: req.WeekInReview == "1",
+		13: req.Events == "1",
 	}
 	maps.DeleteFunc(interests, func(k int, v bool) bool {
 		return !v
