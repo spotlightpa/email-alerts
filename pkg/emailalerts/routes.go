@@ -16,6 +16,7 @@ import (
 
 func (app *appEnv) routes() http.Handler {
 	srv := http.NewServeMux()
+	srv.HandleFunc("OPTIONS /api/", app.optionsNoop)
 	srv.HandleFunc("GET /api/healthcheck", app.ping)
 	srv.HandleFunc("POST /api/subscribe-v2", app.postSubscribeActiveCampaign)
 	srv.Handle("GET /api/token", mid.Controller(app.getToken))
@@ -43,10 +44,15 @@ func (app *appEnv) routes() http.Handler {
 	stack.Push(must(cors.NewMiddleware(cors.Config{
 		Origins:         []string{"*"},
 		Methods:         []string{http.MethodGet, http.MethodPost},
+		RequestHeaders:  []string{"*"},
 		MaxAgeInSeconds: int((5 * time.Minute).Seconds()),
 	})).Wrap)
-
 	return stack.Handler(srv)
+}
+
+func (app *appEnv) optionsNoop(w http.ResponseWriter, r *http.Request) {
+	app.Printf("optionsNoop")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (app *appEnv) notFound(w http.ResponseWriter, r *http.Request) {
