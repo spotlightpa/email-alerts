@@ -18,7 +18,6 @@ func (app *appEnv) routes() http.Handler {
 	srv := http.NewServeMux()
 	srv.HandleFunc("OPTIONS /api/", app.optionsNoop)
 	srv.HandleFunc("GET /api/healthcheck", app.ping)
-	srv.HandleFunc("POST /api/subscribe-v2", app.postSubscribeActiveCampaign)
 	srv.Handle("GET /api/token", mid.Controller(app.getToken))
 	srv.Handle("POST /api/subscribe-v3", mid.Controller(app.postSubscribeJSON))
 	if app.isLambda() {
