@@ -14,7 +14,6 @@ require (
 	github.com/earthboundkid/versioninfo/v2 v2.24.1
 	github.com/getsentry/sentry-go v0.31.1
 	github.com/go-chi/chi/v5 v5.2.1
-	github.com/gorilla/schema v1.4.1
 	github.com/jub0bs/cors v0.5.7
 )
 
