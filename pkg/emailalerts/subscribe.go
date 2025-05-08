@@ -8,6 +8,7 @@ import (
 	"github.com/earthboundkid/emailx/v2"
 	"github.com/earthboundkid/resperr/v2"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
+	"github.com/spotlightpa/email-alerts/pkg/maxmind"
 )
 
 func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) http.Handler {
@@ -52,14 +53,18 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 	}
 
 	ip := r.RemoteAddr
-	ok, err := app.maxcl.IPInCountry(r.Context(), ip,
+	val, err := app.maxcl.IPInsights(r.Context(), ip,
 		"US", "CA", "UK", "PR")
 	if err != nil {
 		return app.replyErr(err)
 	}
-	if !ok {
+	if val == maxmind.ResultFailed {
 		return app.replyErr(resperr.E{
 			M: "Sorry, due to spam concerns, we are not accept international subscribers at this time."})
+	}
+	status := activecampaign.StatusActive
+	if val == maxmind.ResultProvisional {
+		status = activecampaign.StatusUnconfirmed
 	}
 	app.l.Println("subscribing user", req.EmailAddress)
 
@@ -106,7 +111,6 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 	contactID := res.Contacts[0].ID
 	app.l.Printf("found user: id=%d", contactID)
 
-	status := activecampaign.StatusActive
 	for _, listID := range interests {
 		if err := app.ac.AddToList(r.Context(), listID, contactID, status); err != nil {
 			return app.replyErr(err)
