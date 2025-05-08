@@ -65,7 +65,7 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 	}
 	app.l.Println("subscribing user", req.EmailAddress)
 
-	interests := map[int]bool{
+	interests := map[activecampaign.ListID]bool{
 		1: true, // Master list
 		3: req.PALocal == "1",
 		4: req.PAPost == "1",
@@ -80,7 +80,7 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 		11: req.WeekInReview == "1",
 		13: req.Events == "1",
 	}
-	maps.DeleteFunc(interests, func(k int, v bool) bool {
+	maps.DeleteFunc(interests, func(k activecampaign.ListID, v bool) bool {
 		return !v
 	})
 
@@ -107,8 +107,9 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 	contactID := res.Contacts[0].ID
 	app.l.Printf("found user: id=%d", contactID)
 
+	status := activecampaign.StatusActive
 	for _, listID := range slices.Sorted(maps.Keys(interests)) {
-		if err := app.ac.AddToList(r.Context(), listID, contactID); err != nil {
+		if err := app.ac.AddToList(r.Context(), listID, contactID, status); err != nil {
 			return app.replyErr(err)
 		}
 	}
