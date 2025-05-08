@@ -1,9 +1,7 @@
 package emailalerts
 
 import (
-	"maps"
 	"net/http"
-	"slices"
 	"strings"
 	"time"
 
@@ -65,7 +63,8 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 	}
 	app.l.Println("subscribing user", req.EmailAddress)
 
-	interests := map[activecampaign.ListID]bool{
+	var interests []activecampaign.ListID
+	for listID, ok := range []bool{
 		1: true, // Master list
 		3: req.PALocal == "1",
 		4: req.PAPost == "1",
@@ -79,11 +78,11 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 		10: req.BreakingNews == "1",
 		11: req.WeekInReview == "1",
 		13: req.Events == "1",
+	} {
+		if ok {
+			interests = append(interests, activecampaign.ListID(listID))
+		}
 	}
-	maps.DeleteFunc(interests, func(k activecampaign.ListID, v bool) bool {
-		return !v
-	})
-
 	if err := app.ac.CreateContact(r.Context(), activecampaign.Contact{
 		Email:     emailx.Normalize(req.EmailAddress),
 		FirstName: strings.TrimSpace(req.FirstName),
@@ -108,7 +107,7 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 	app.l.Printf("found user: id=%d", contactID)
 
 	status := activecampaign.StatusActive
-	for _, listID := range slices.Sorted(maps.Keys(interests)) {
+	for _, listID := range interests {
 		if err := app.ac.AddToList(r.Context(), listID, contactID, status); err != nil {
 			return app.replyErr(err)
 		}
