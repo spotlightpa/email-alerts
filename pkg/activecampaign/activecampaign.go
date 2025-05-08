@@ -64,44 +64,57 @@ type FindContactResponse struct {
 }
 
 type ContactInfo struct {
-	ID                  int      `json:"id,string"`
-	Email               string   `json:"email"`
-	Cdate               string   `json:"cdate"`
-	Phone               string   `json:"phone"`
-	FirstName           string   `json:"firstName"`
-	LastName            string   `json:"lastName"`
-	Orgid               string   `json:"orgid"`
-	SegmentioID         string   `json:"segmentio_id"`
-	BouncedHard         string   `json:"bounced_hard"`
-	BouncedSoft         string   `json:"bounced_soft"`
-	BouncedDate         string   `json:"bounced_date"`
-	IP                  string   `json:"ip"`
-	Ua                  string   `json:"ua"`
-	Hash                string   `json:"hash"`
-	SocialdataLastcheck string   `json:"socialdata_lastcheck"`
-	EmailLocal          string   `json:"email_local"`
-	EmailDomain         string   `json:"email_domain"`
-	Sentcnt             string   `json:"sentcnt"`
-	RatingTstamp        string   `json:"rating_tstamp"`
-	Gravatar            string   `json:"gravatar"`
-	Deleted             string   `json:"deleted"`
-	Adate               string   `json:"adate"`
-	Udate               string   `json:"udate"`
-	Edate               string   `json:"edate"`
-	ScoreValues         []any    `json:"scoreValues"`
-	Organization        any      `json:"organization"`
-	AccountContacts     []string `json:"accountContacts,omitempty"`
+	ID                  ContactID `json:"id,string"`
+	Email               string    `json:"email"`
+	Cdate               string    `json:"cdate"`
+	Phone               string    `json:"phone"`
+	FirstName           string    `json:"firstName"`
+	LastName            string    `json:"lastName"`
+	Orgid               string    `json:"orgid"`
+	SegmentioID         string    `json:"segmentio_id"`
+	BouncedHard         string    `json:"bounced_hard"`
+	BouncedSoft         string    `json:"bounced_soft"`
+	BouncedDate         string    `json:"bounced_date"`
+	IP                  string    `json:"ip"`
+	Ua                  string    `json:"ua"`
+	Hash                string    `json:"hash"`
+	SocialdataLastcheck string    `json:"socialdata_lastcheck"`
+	EmailLocal          string    `json:"email_local"`
+	EmailDomain         string    `json:"email_domain"`
+	Sentcnt             string    `json:"sentcnt"`
+	RatingTstamp        string    `json:"rating_tstamp"`
+	Gravatar            string    `json:"gravatar"`
+	Deleted             string    `json:"deleted"`
+	Adate               string    `json:"adate"`
+	Udate               string    `json:"udate"`
+	Edate               string    `json:"edate"`
+	ScoreValues         []any     `json:"scoreValues"`
+	Organization        any       `json:"organization"`
+	AccountContacts     []string  `json:"accountContacts,omitempty"`
 }
 
 type FindContactMeta struct {
 	Total string `json:"total"`
 }
 
-func (cl Client) AddToList(ctx context.Context, listID, contactID int) error {
+type (
+	ListID    int
+	ContactID int
+	Status    int
+)
+
+const (
+	StatusUnconfirmed  Status = 0
+	StatusActive       Status = 1
+	StatusUnsubscribed Status = 2
+	StatusBounced      Status = 3
+)
+
+func (cl Client) AddToList(ctx context.Context, listID ListID, contactID ContactID, status Status) error {
 	type ContactList struct {
-		List    int `json:"list"`
-		Contact int `json:"contact"`
-		Status  int `json:"status"`
+		List    ListID    `json:"list"`
+		Contact ContactID `json:"contact"`
+		Status  Status    `json:"status"`
 	}
 	type AddToList struct {
 		ContactList ContactList `json:"contactList"`
@@ -111,7 +124,7 @@ func (cl Client) AddToList(ctx context.Context, listID, contactID int) error {
 		BodyJSON(AddToList{ContactList: ContactList{
 			List:    listID,
 			Contact: contactID,
-			Status:  1,
+			Status:  status,
 		}}).
 		Fetch(ctx)
 }
