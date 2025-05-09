@@ -103,6 +103,7 @@ type (
 	Status    int
 )
 
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -type Status activecampaign.go
 const (
 	StatusUnconfirmed  Status = 0
 	StatusActive       Status = 1
