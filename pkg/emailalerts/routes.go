@@ -3,9 +3,7 @@ package emailalerts
 import (
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/earthboundkid/mid"
@@ -71,15 +69,6 @@ func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Write(b)
-}
-
-func validateRedirect(formVal, fallback string) string {
-	if u, err := url.Parse(formVal); err == nil {
-		if u.Scheme == "https" && strings.HasSuffix(u.Host, ".spotlightpa.org") {
-			return formVal
-		}
-	}
-	return fallback
 }
 
 func (app *appEnv) getToken(w http.ResponseWriter, r *http.Request) http.Handler {
