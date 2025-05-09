@@ -251,14 +251,14 @@ func (app *appEnv) postListAdd(w http.ResponseWriter, r *http.Request) http.Hand
 	}
 	msg := app.unpackMessage(req)
 	if msg == nil {
-		return app.replyErr(resperr.E{M: "Bad signed message."})
+		return app.replyErr(resperr.E{M: "Message could not be verified."})
 	}
 	if !msg.ValidNow() {
 		return app.replyErr(resperr.E{M: "Request expired. Try again."})
 	}
 	var sub ListAdd
 	if err := msg.Decode(&sub); err != nil {
-		return app.replyErr(resperr.E{M: "Bad signed message."})
+		return app.replyErr(resperr.E{M: "Message could not be parsed."})
 	}
 	app.Printf("subscribing %q (%d) to %v (%d) %v",
 		sub.EmailAddress, sub.ContactID, sub.ListID, sub.ListID, sub.Status)
