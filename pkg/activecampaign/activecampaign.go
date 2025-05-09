@@ -103,7 +103,22 @@ type (
 	Status    int
 )
 
-//go:generate go run golang.org/x/tools/cmd/stringer@latest -type Status activecampaign.go
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -trimprefix List -type ListID
+const (
+	ListMaster          ListID = 1
+	ListPALocal         ListID = 3
+	ListPAPost          ListID = 4
+	ListInvestigator    ListID = 5
+	ListHowWeCare       ListID = 6
+	ListTalkOfTheTown   ListID = 7
+	ListPennStateAlerts ListID = 8
+	ListBerksCounty     ListID = 9
+	ListBreakingNews    ListID = 10
+	ListWeekInReview    ListID = 11
+	ListEvents          ListID = 13
+)
+
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -trimprefix Status -type Status
 const (
 	StatusUnconfirmed  Status = 0
 	StatusActive       Status = 1
