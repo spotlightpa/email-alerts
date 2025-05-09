@@ -22,7 +22,7 @@ func New(accountID, licenseKey string, cl *http.Client, l *log.Logger) Client {
 
 type Result int
 
-//go:generate go run golang.org/x/tools/cmd/stringer@latest -type Result maxmind.go
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -trimprefix Result -type Result
 const (
 	ResultFailed Result = iota
 	ResultProvisional

@@ -211,23 +211,22 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 	now := time.Now()
 	var messages []string
 	for listID, ok := range []bool{
-		1: true, // Master list
-		3: req.PALocal == "1",
-		4: req.PAPost == "1",
-		5: req.Investigator == "1",
-		6: req.HowWeCare == "1",
-		7: req.TalkOfTheTown == "1" ||
-			req.StateCollege == "1",
-		8: req.PennStateAlerts == "1",
-		9: req.BerksCounty == "1" ||
-			req.Berks == "1",
-		10: req.BreakingNews == "1",
-		11: req.WeekInReview == "1",
-		13: req.Events == "1",
+		activecampaign.ListMaster:          true,
+		activecampaign.ListPALocal:         req.PALocal == "1",
+		activecampaign.ListPAPost:          req.PAPost == "1",
+		activecampaign.ListInvestigator:    req.Investigator == "1",
+		activecampaign.ListHowWeCare:       req.HowWeCare == "1",
+		activecampaign.ListTalkOfTheTown:   req.TalkOfTheTown == "1" || req.StateCollege == "1",
+		activecampaign.ListPennStateAlerts: req.PennStateAlerts == "1",
+		activecampaign.ListBerksCounty:     req.BerksCounty == "1" || req.Berks == "1",
+		activecampaign.ListBreakingNews:    req.BreakingNews == "1",
+		activecampaign.ListWeekInReview:    req.WeekInReview == "1",
+		activecampaign.ListEvents:          req.Events == "1",
 	} {
 		if !ok {
 			continue
 		}
+		app.l.Printf("add to list %v", activecampaign.ListID(listID))
 		sub := ListAdd{
 			EmailAddress: emailAddress,
 			ContactID:    contactID,
@@ -261,7 +260,8 @@ func (app *appEnv) postListAdd(w http.ResponseWriter, r *http.Request) http.Hand
 	if err := msg.Decode(&sub); err != nil {
 		return app.replyErr(resperr.E{M: "Bad signed message."})
 	}
-	app.Printf("subscribing %q (%d) to %d %v", sub.EmailAddress, sub.ContactID, sub.ListID, sub.Status)
+	app.Printf("subscribing %q (%d) to %v (%d) %v",
+		sub.EmailAddress, sub.ContactID, sub.ListID, sub.ListID, sub.Status)
 	if err := app.ac.AddToList(r.Context(), sub.ListID, sub.ContactID, sub.Status); err != nil {
 		return app.replyErr(err)
 	}
