@@ -18,7 +18,6 @@ func (app *appEnv) routes() http.Handler {
 	srv.HandleFunc("OPTIONS /api/", app.optionsNoop)
 	srv.HandleFunc("GET /api/healthcheck", app.ping)
 	srv.Handle("GET /api/token", mid.Controller(app.getToken))
-	srv.Handle("POST /api/subscribe-v3", mid.Controller(app.postSubscribeJSON))
 	srv.Handle("POST /api/verify-subscribe", mid.Controller(app.postVerifySubscribe))
 	srv.Handle("POST /api/list-add", mid.Controller(app.postListAdd))
 	if app.isLambda() {
