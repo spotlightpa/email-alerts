@@ -1,4 +1,4 @@
-GET /geoip/v2.1/country/N/A HTTP/1.1
+GET /geoip/v2.1/insights/N/A HTTP/1.1
 Host: geoip.maxmind.com
 Authorization: Basic Og==
 
