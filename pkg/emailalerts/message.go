@@ -9,6 +9,8 @@ import (
 	"encoding/gob"
 	"strings"
 	"time"
+
+	"github.com/spotlightpa/email-alerts/pkg/must"
 )
 
 const validityWindow time.Duration = 5 * time.Minute
@@ -43,7 +45,7 @@ func (msg Message) Decode(obj any) error {
 func (app *appEnv) signMessage(msg Message) string {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
-	must(enc.Encode(msg))
+	must.Do(enc.Encode(msg))
 	payloadGob := buf.Bytes()
 	mac := hmac.New(sha256.New, []byte(app.signingSecret))
 	mac.Write(payloadGob)

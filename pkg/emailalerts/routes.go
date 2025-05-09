@@ -10,6 +10,7 @@ import (
 	sentryhttp "github.com/getsentry/sentry-go/http"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/jub0bs/cors"
+	"github.com/spotlightpa/email-alerts/pkg/must"
 )
 
 func (app *appEnv) routes() http.Handler {
@@ -38,7 +39,7 @@ func (app *appEnv) routes() http.Handler {
 	stack.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
 	stack.Push(timeoutMiddleware(9 * time.Second))
 	stack.Push(app.versionMiddleware)
-	stack.Push(try(cors.NewMiddleware(cors.Config{
+	stack.Push(must.Get(cors.NewMiddleware(cors.Config{
 		Origins:         []string{"*"},
 		Methods:         []string{http.MethodGet, http.MethodPost},
 		RequestHeaders:  []string{"*"},

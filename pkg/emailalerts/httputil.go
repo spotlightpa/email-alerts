@@ -82,17 +82,6 @@ func (app *appEnv) logErr(ctx context.Context, err error) {
 	app.Printf("err: %v", err)
 }
 
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func try[T any](val T, err error) T {
-	must(err)
-	return val
-}
-
 func (app *appEnv) createToken(now time.Time) string {
 	msg := Message{CreatedAt: now}
 	return app.signMessage(msg)
