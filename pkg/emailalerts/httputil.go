@@ -1,18 +1,13 @@
 package emailalerts
 
 import (
-	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"mime"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -87,87 +82,25 @@ func (app *appEnv) logErr(ctx context.Context, err error) {
 	app.Printf("err: %v", err)
 }
 
-func (app *appEnv) redirectErr(w http.ResponseWriter, r *http.Request, err error) {
-	app.logErr(r.Context(), err)
-
-	sorryURL := validateRedirect(r.FormValue("redirect_sorry"), "/sorry.html")
-	code := resperr.StatusCode(err)
-	msg := resperr.UserMessage(err)
-	sorryURL = fmt.Sprintf("%s?code=%d&msg=%s",
-		sorryURL, code, url.QueryEscape(msg))
-	if ve := resperr.ValidationErrors(err); len(ve) > 0 {
-		b, _ := json.Marshal(ve)
-		sorryURL += fmt.Sprintf("&errors=%s", url.QueryEscape(string(b)))
-	}
-	http.Redirect(w, r, sorryURL, http.StatusSeeOther)
-}
-
-func must[T any](val T, err error) T {
+func must(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func try[T any](val T, err error) T {
+	must(err)
 	return val
 }
 
 func (app *appEnv) createToken(now time.Time) string {
-	encoding := base64.URLEncoding
-
-	// Make a timestamp
-	timestamp := must(now.MarshalBinary())
-	token := make([]byte, 0,
-		encoding.EncodedLen(len(timestamp))+1+encoding.EncodedLen(sha256.Size))
-	// Encode the timestamp
-	token = base64.URLEncoding.AppendEncode(token, timestamp)
-
-	// Sign the encoded timestamp
-	mac := hmac.New(sha256.New, []byte(app.signingSecret))
-	mac.Write(token)
-	rawSig := mac.Sum(nil)
-
-	// Use a dot to separate the parts
-	token = append(token, '.')
-	// Append the encoded signature
-	token = base64.URLEncoding.AppendEncode(token, rawSig)
-	return string(token)
+	msg := Message{CreatedAt: now}
+	return app.signMessage(msg)
 }
 
-const validityWindow time.Duration = 5 * time.Minute
-
 func (app *appEnv) verifyToken(now time.Time, token string) bool {
-	// Split on the dot
-	encodedTimestamp, encodedSig, ok := bytes.Cut([]byte(token), []byte{'.'})
-	if !ok {
-		return false
-	}
-	encoding := base64.URLEncoding
-	// Decode the signature first
-	sig, err := encoding.AppendDecode(nil, encodedSig)
-	if err != nil {
-		return false
-	}
-	// Check that the signature matches the encoded timestamp
-	mac := hmac.New(sha256.New, []byte(app.signingSecret))
-	mac.Write(encodedTimestamp)
-	expectedSig := mac.Sum(nil)
-	if !hmac.Equal(sig, expectedSig) {
-		return false
-	}
-	// Decode the timestamp
-	timestamp, err := encoding.AppendDecode(nil, encodedTimestamp)
-	if err != nil {
-		// This should not happen because it passed the signing check
-		app.logErr(context.Background(), err)
-		return false
-	}
-	var ts time.Time
-	if err := ts.UnmarshalBinary(timestamp); err != nil {
-		// This should not happen because it passed the signing check
-		app.logErr(context.Background(), err)
-		return false
-	}
-	// Check that it is inside the window
-	// Prevents credential reuse
-	return now.After(ts) && ts.Add(validityWindow).After(now)
+	msg := app.unpackMessage(token)
+	return msg != nil && msg.Body == "" && msg.ValidAt(now)
 }
 
 func timeoutMiddleware(timeout time.Duration) mid.Middleware {
