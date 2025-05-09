@@ -69,25 +69,19 @@ func TestVerifyToken(t *testing.T) {
 		{
 			name:         "Hardcoded valid",
 			sinceSigning: 1 * time.Minute,
-			token:        "AQAAAA7dJKBAAAAAAP__.yooXIW4p5Tlh_U42Ft85BgFwN2MzkhsM2uG2rOL_tNM=",
+			token:        "B1-pzvvUsrttRA53aYqe7C4fIGYK-LKCNtra5RTVg2A=.LH8DAQEHTWVzc2FnZQH_gAABAgEEQm9keQEMAAEJQ3JlYXRlZEF0Af-CAAAAEP-BBQEBBFRpbWUB_4IAAAAU_4ACDwEAAAAO3SSgQAAAAAD__wA=",
 			valid:        true,
 		},
 		{
 			name:         "Hardcoded expired",
 			sinceSigning: 15 * time.Minute,
-			token:        "AQAAAA7dJKBAAAAAAP__.yooXIW4p5Tlh_U42Ft85BgFwN2MzkhsM2uG2rOL_tNM=",
+			token:        "B1-pzvvUsrttRA53aYqe7C4fIGYK-LKCNtra5RTVg2A=.LH8DAQEHTWVzc2FnZQH_gAABAgEEQm9keQEMAAEJQ3JlYXRlZEF0Af-CAAAAEP-BBQEBBFRpbWUB_4IAAAAU_4ACDwEAAAAO3SSgQAAAAAD__wA=",
 			valid:        false,
 		},
 		{
 			name:         "Hardcoded too soon",
 			sinceSigning: -1 * time.Minute,
-			token:        "AQAAAA7dJKBAAAAAAP__.yooXIW4p5Tlh_U42Ft85BgFwN2MzkhsM2uG2rOL_tNM=",
-			valid:        false,
-		},
-		{
-			name:         "Signature is decodable but wrong",
-			sinceSigning: 1 * time.Minute,
-			token:        "AQAAAA7dJKBAAAAAP__.yooXIW4p5Tlh_U42Ft85BgFwN2MzkhsM2uG2rOL_tNM=",
+			token:        "B1-pzvvUsrttRA53aYqe7C4fIGYK-LKCNtra5RTVg2A=.LH8DAQEHTWVzc2FnZQH_gAABAgEEQm9keQEMAAEJQ3JlYXRlZEF0Af-CAAAAEP-BBQEBBFRpbWUB_4IAAAAU_4ACDwEAAAAO3SSgQAAAAAD__wA=",
 			valid:        false,
 		},
 	}

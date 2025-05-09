@@ -40,7 +40,7 @@ func (app *appEnv) routes() http.Handler {
 	stack.Push(middleware.RequestLogger(&middleware.DefaultLogFormatter{Logger: app.l}))
 	stack.Push(timeoutMiddleware(9 * time.Second))
 	stack.Push(app.versionMiddleware)
-	stack.Push(must(cors.NewMiddleware(cors.Config{
+	stack.Push(try(cors.NewMiddleware(cors.Config{
 		Origins:         []string{"*"},
 		Methods:         []string{http.MethodGet, http.MethodPost},
 		RequestHeaders:  []string{"*"},

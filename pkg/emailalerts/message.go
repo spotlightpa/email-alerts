@@ -1,0 +1,76 @@
+package emailalerts
+
+import (
+	"bytes"
+	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/gob"
+	"time"
+)
+
+const validityWindow time.Duration = 5 * time.Minute
+
+type Message struct {
+	Body      string
+	CreatedAt time.Time
+}
+
+func (msg Message) ValidAt(t time.Time) bool {
+	return msg.CreatedAt.Before(t) && msg.CreatedAt.Add(validityWindow).After(t)
+}
+
+func (msg Message) ValidNow() bool {
+	return msg.ValidAt(time.Now())
+}
+
+func (app *appEnv) signMessage(msg Message) string {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	must(enc.Encode(msg))
+	payloadGob := buf.Bytes()
+	mac := hmac.New(sha256.New, []byte(app.signingSecret))
+	mac.Write(payloadGob)
+	rawSig := mac.Sum(nil)
+	b := make([]byte, 0, base64.URLEncoding.EncodedLen(len(rawSig))+
+		len(".")+
+		base64.URLEncoding.EncodedLen(len(payloadGob)))
+	b = base64.URLEncoding.AppendEncode(b, rawSig)
+	b = append(b, '.')
+	b = base64.URLEncoding.AppendEncode(b, payloadGob)
+	return string(b)
+}
+
+func (app *appEnv) unpackMessage(signedMsg string) *Message {
+	// Split on the dot
+	b64Sig, b64Obj, ok := bytes.Cut([]byte(signedMsg), []byte{'.'})
+	if !ok {
+		return nil
+	}
+	encoding := base64.URLEncoding
+	rawSig, err := encoding.AppendDecode(nil, b64Sig)
+	if err != nil {
+		return nil
+	}
+	gobObj, err := encoding.AppendDecode(nil, b64Obj)
+	if err != nil {
+		return nil
+	}
+	// Check that the signature matches the encoded gob
+	mac := hmac.New(sha256.New, []byte(app.signingSecret))
+	mac.Write(gobObj)
+	expectedSig := mac.Sum(nil)
+	if !hmac.Equal(rawSig, expectedSig) {
+		return nil
+	}
+	// Decode the gob
+	dec := gob.NewDecoder(bytes.NewBuffer(gobObj))
+	var payload Message
+	if err = dec.Decode(&payload); err != nil {
+		// This should not happen because it passed the signing check
+		app.logErr(context.Background(), err)
+		return nil
+	}
+	return &payload
+}
