@@ -61,22 +61,22 @@ func (app *appEnv) signMessage(msg Message) string {
 
 func (app *appEnv) unpackMessage(signedMsg string) *Message {
 	// Split on the dot
-	b64Sig, b64Obj, ok := bytes.Cut([]byte(signedMsg), []byte{'.'})
+	b64Sig, b64Obj, ok := strings.Cut(signedMsg, ".")
 	if !ok {
 		return nil
 	}
 	encoding := base64.URLEncoding
-	rawSig, err := encoding.AppendDecode(nil, b64Sig)
+	rawSig, err := encoding.DecodeString(b64Sig)
 	if err != nil {
 		return nil
 	}
-	gobObj, err := encoding.AppendDecode(nil, b64Obj)
+	gobObj, err := encoding.DecodeString(b64Obj)
 	if err != nil {
 		return nil
 	}
 	// Check that the signature matches the encoded gob
 	mac := hmac.New(sha256.New, []byte(app.signingSecret))
-	mac.Write(gobObj)
+	_ = must.Get(mac.Write(gobObj))
 	expectedSig := mac.Sum(nil)
 	if !hmac.Equal(rawSig, expectedSig) {
 		return nil
