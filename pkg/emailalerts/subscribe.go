@@ -118,3 +118,152 @@ func (app *appEnv) postSubscribeJSON(w http.ResponseWriter, r *http.Request) htt
 	}
 	return app.replyJSON("ok")
 }
+
+type ListAdd struct {
+	EmailAddress string
+	ContactID    activecampaign.ContactID
+	ListID       activecampaign.ListID
+	Status       activecampaign.Status
+}
+
+func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) http.Handler {
+	app.Printf("start postVerifySubscribe")
+
+	var req struct {
+		EmailAddress            string `json:"EMAIL"`
+		FirstName               string `json:"FNAME"`
+		LastName                string `json:"LNAME"`
+		Events                  string `json:"events"`
+		Investigator            string `json:"investigator"`
+		PAPost                  string `json:"papost"`
+		BreakingNews            string `json:"breaking_news"`
+		PALocal                 string `json:"palocal"`
+		BerksCounty             string `json:"berks_county"`
+		Berks                   string `json:"berks"`         // Alias for BerksCounty
+		TalkOfTheTown           string `json:"talkofthetown"` // Alias for StateCollege
+		StateCollege            string `json:"state_college"`
+		WeekInReview            string `json:"week_in_review"`
+		PennStateAlerts         string `json:"pennstatealert"`
+		CentreCountyDocumenters string `json:"centre_county_documenters"` // Alias for CentreDocumenters
+		CentreDocumenters       string `json:"centredocumenters"`
+		HowWeCare               string `json:"howwecare"` // Alias for care
+		Care                    string `json:"care"`
+		Token                   string `json:"token"`
+	}
+	if err := app.readJSON(r, &req); err != nil {
+		return app.replyErr(err)
+	}
+	if err := validate(req.EmailAddress, req.FirstName, req.LastName); err != nil {
+		return app.replyErr(err)
+	}
+	if !app.verifyToken(time.Now(), req.Token) {
+		return app.replyErr(resperr.New(http.StatusBadRequest, "invalid token %q", req.Token))
+	}
+	emailAddress := emailx.Normalize(req.EmailAddress)
+
+	if !app.kb.Verify(r.Context(), emailAddress) {
+		err := resperr.New(http.StatusBadRequest,
+			"Kickbox rejected %q", emailAddress)
+		err = resperr.E{E: err,
+			M: "There was a problem with the email address entered. Please check it and try again."}
+		return app.replyErr(err)
+	}
+
+	ip := r.RemoteAddr
+	val, err := app.maxcl.IPInsights(r.Context(), ip,
+		"US", "CA", "UK", "PR")
+	if err != nil {
+		return app.replyErr(err)
+	}
+	if val == maxmind.ResultFailed {
+		return app.replyErr(resperr.E{
+			M: "Sorry, due to spam concerns, we are not accept international subscribers at this time."})
+	}
+	status := activecampaign.StatusActive
+	if val == maxmind.ResultProvisional {
+		status = activecampaign.StatusUnconfirmed
+	}
+	app.l.Println("subscribing user", emailAddress)
+
+	if err := app.ac.CreateContact(r.Context(), activecampaign.Contact{
+		Email:     emailAddress,
+		FirstName: strings.TrimSpace(req.FirstName),
+		LastName:  strings.TrimSpace(req.LastName),
+	}); err != nil {
+		return app.replyErr(err)
+	}
+
+	app.l.Printf("subscribed: email=%q", emailAddress)
+	res, err := app.ac.FindContactByEmail(r.Context(), emailAddress)
+	if err != nil {
+		return app.replyErr(err)
+	}
+	if len(res.Contacts) != 1 {
+		err := resperr.New(http.StatusBadRequest,
+			"Could not find user ID %q", emailAddress)
+		err = resperr.E{E: err,
+			M: "There was a problem while processing your request. Please try again."}
+		return app.replyErr(err)
+	}
+	contactID := res.Contacts[0].ID
+	app.l.Printf("found user: id=%d", contactID)
+
+	now := time.Now()
+	var messages []string
+	for listID, ok := range []bool{
+		1: true, // Master list
+		3: req.PALocal == "1",
+		4: req.PAPost == "1",
+		5: req.Investigator == "1",
+		6: req.HowWeCare == "1",
+		7: req.TalkOfTheTown == "1" ||
+			req.StateCollege == "1",
+		8: req.PennStateAlerts == "1",
+		9: req.BerksCounty == "1" ||
+			req.Berks == "1",
+		10: req.BreakingNews == "1",
+		11: req.WeekInReview == "1",
+		13: req.Events == "1",
+	} {
+		if !ok {
+			continue
+		}
+		sub := ListAdd{
+			EmailAddress: emailAddress,
+			ContactID:    contactID,
+			ListID:       activecampaign.ListID(listID),
+			Status:       status,
+		}
+		msg := Message{CreatedAt: now}
+		if err := msg.Encode(sub); err != nil {
+			return app.replyErr(err)
+		}
+		signed := app.signMessage(msg)
+		messages = append(messages, signed)
+	}
+	return app.replyJSON(messages)
+}
+
+func (app *appEnv) postListAdd(w http.ResponseWriter, r *http.Request) http.Handler {
+	app.Printf("start postListAdd")
+	var req string
+	if err := app.readJSON(r, &req); err != nil {
+		return app.replyErr(err)
+	}
+	msg := app.unpackMessage(req)
+	if msg == nil {
+		return app.replyErr(resperr.E{M: "Bad signed message."})
+	}
+	if !msg.ValidNow() {
+		return app.replyErr(resperr.E{M: "Request expired. Try again."})
+	}
+	var sub ListAdd
+	if err := msg.Decode(&sub); err != nil {
+		return app.replyErr(resperr.E{M: "Bad signed message."})
+	}
+	app.Printf("subscribing %q (%d) to %d %v", sub.EmailAddress, sub.ContactID, sub.ListID, sub.Status)
+	if err := app.ac.AddToList(r.Context(), sub.ListID, sub.ContactID, sub.Status); err != nil {
+		return app.replyErr(err)
+	}
+	return app.replyJSON("OK")
+}
