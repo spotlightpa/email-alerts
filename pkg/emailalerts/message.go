@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/gob"
+	"strings"
 	"time"
 )
 
@@ -23,6 +24,20 @@ func (msg Message) ValidAt(t time.Time) bool {
 
 func (msg Message) ValidNow() bool {
 	return msg.ValidAt(time.Now())
+}
+
+func (msg *Message) Encode(obj any) error {
+	var buf strings.Builder
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(obj); err != nil {
+		return err
+	}
+	msg.Body = buf.String()
+	return nil
+}
+
+func (msg Message) Decode(obj any) error {
+	return gob.NewDecoder(strings.NewReader(msg.Body)).Decode(obj)
 }
 
 func (app *appEnv) signMessage(msg Message) string {
