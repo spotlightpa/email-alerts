@@ -69,7 +69,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 	}
 	if val == maxmind.ResultFailed {
 		return app.replyErr(resperr.E{
-			M: "Sorry, due to spam concerns, we are not accept international subscribers at this time."})
+			M: "Sorry, due to spam concerns, we are not accepting international subscribers at this time."})
 	}
 	status := activecampaign.StatusActive
 	if val == maxmind.ResultProvisional {
