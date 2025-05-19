@@ -41,6 +41,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		HowWeCare               string `json:"howwecare"` // Alias for care
 		Care                    string `json:"care"`
 		Token                   string `json:"token"`
+		SignUpSource            string `json:"source"`
 	}
 	if err := app.readJSON(r, &req); err != nil {
 		return app.replyErr(err)
@@ -81,7 +82,11 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		Email:     emailAddress,
 		FirstName: strings.TrimSpace(req.FirstName),
 		LastName:  strings.TrimSpace(req.LastName),
-	}); err != nil {
+		FieldValues: []activecampaign.FieldValue{
+			{
+				Field: activecampaign.SignUpSourceFieldID,
+				Value: req.SignUpSource,
+			}}}); err != nil {
 		return app.replyErr(err)
 	}
 
