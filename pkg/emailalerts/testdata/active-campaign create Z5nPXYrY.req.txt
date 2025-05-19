@@ -1,5 +1,0 @@
-POST /api/3/contacts HTTP/1.1
-Api-Token:
-Content-Type: application/json
-
-{"contact":{"email":"x@y.com","firstName":"","lastName":"","phone":"","fieldValues":null}}
