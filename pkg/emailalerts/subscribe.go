@@ -72,38 +72,40 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		return app.replyErr(resperr.E{
 			M: "Sorry, due to spam concerns, we are not accepting international subscribers at this time."})
 	}
-	status := activecampaign.StatusActive
-	if val == maxmind.ResultProvisional {
-		status = activecampaign.StatusUnconfirmed
-	}
-	app.l.Println("subscribing user", emailAddress)
-
-	if err := app.ac.CreateContact(r.Context(), activecampaign.Contact{
-		Email:     emailAddress,
-		FirstName: strings.TrimSpace(req.FirstName),
-		LastName:  strings.TrimSpace(req.LastName),
-		FieldValues: []activecampaign.FieldValue{
-			{
-				Field: activecampaign.SignUpSourceFieldID,
-				Value: req.SignUpSource,
-			}}}); err != nil {
-		return app.replyErr(err)
-	}
-
-	app.l.Printf("subscribed: email=%q", emailAddress)
+	app.l.Printf("should subscribe: email=%q", emailAddress)
 	res, err := app.ac.FindContactByEmail(r.Context(), emailAddress)
 	if err != nil {
 		return app.replyErr(err)
 	}
-	if len(res.Contacts) != 1 {
-		err := resperr.New(http.StatusBadRequest,
-			"Could not find user ID %q", emailAddress)
-		err = resperr.E{E: err,
-			M: "There was a problem while processing your request. Please try again."}
-		return app.replyErr(err)
+
+	shouldConfirm := false
+	var contactID activecampaign.ContactID
+
+	if len(res.Contacts) == 1 {
+		contactID = res.Contacts[0].ID
+		app.l.Printf("found user: email=%q id=%d", emailAddress, contactID)
+	} else {
+		if val == maxmind.ResultProvisional {
+			shouldConfirm = true
+		}
+		app.l.Printf("not found; creating user: email=%q", emailAddress)
+		if contactID, err = app.ac.CreateContact(r.Context(), activecampaign.Contact{
+			Email:     emailAddress,
+			FirstName: strings.TrimSpace(req.FirstName),
+			LastName:  strings.TrimSpace(req.LastName),
+			FieldValues: []activecampaign.FieldValue{
+				{
+					Field: activecampaign.SignUpSourceFieldID,
+					Value: req.SignUpSource,
+				}}}); err != nil {
+			return app.replyErr(err)
+		}
+		app.Printf("created user email=%q id=%d", emailAddress, contactID)
 	}
-	contactID := res.Contacts[0].ID
-	app.l.Printf("found user: id=%d", contactID)
+	if shouldConfirm {
+		app.Printf("user email=%q id=%d needs to be confirmed", emailAddress, contactID)
+		// TODO: Add to confirmation automation
+	}
 
 	now := time.Now()
 	var messages []string
@@ -128,7 +130,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 			EmailAddress: emailAddress,
 			ContactID:    contactID,
 			ListID:       activecampaign.ListID(listID),
-			Status:       status,
+			Status:       activecampaign.StatusActive,
 		}
 		msg := Message{CreatedAt: now}
 		if err := msg.Encode(sub); err != nil {

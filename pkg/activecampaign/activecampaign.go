@@ -36,16 +36,23 @@ type Contact struct {
 	FieldValues []FieldValue `json:"fieldValues"`
 }
 
-func (cl Client) CreateContact(ctx context.Context, contact Contact) error {
+func (cl Client) CreateContact(ctx context.Context, contact Contact) (ContactID, error) {
 	type CreateContact struct {
 		Contact Contact `json:"contact"`
 	}
-
-	return cl.rb.Clone().
+	type CreateContactResponse struct {
+		Contact struct {
+			ID ContactID `json:"id,string"`
+		} `json:"contact"`
+	}
+	var res CreateContactResponse
+	err := cl.rb.Clone().
 		Path("/api/3/contacts").
 		BodyJSON(CreateContact{contact}).
-		CheckStatus(201, 422).
+		CheckStatus(201).
+		ToJSON(&res).
 		Fetch(ctx)
+	return res.Contact.ID, err
 }
 
 func (cl Client) FindContactByEmail(ctx context.Context, email string) (FindContactResponse, error) {
