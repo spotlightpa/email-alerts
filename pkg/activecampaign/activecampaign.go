@@ -105,9 +105,10 @@ type FindContactMeta struct {
 }
 
 type (
-	ListID    int
-	ContactID int
-	Status    int
+	ListID       int
+	ContactID    int
+	Status       int
+	AutomationID int
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -trimprefix List -type ListID
@@ -151,4 +152,24 @@ func (cl Client) AddToList(ctx context.Context, listID ListID, contactID Contact
 		}}).
 		Fetch(ctx)
 }
+
+func (cl Client) AddToAutomation(ctx context.Context, contactID ContactID, automationID AutomationID) error {
+	type ContactAutomation struct {
+		Contact    ContactID    `json:"contact,string"`
+		Automation AutomationID `json:"automation,string"`
+	}
+	type ContactAutomationRequest struct {
+		ContactAutomation ContactAutomation `json:"contactAutomation"`
+	}
+
+	return cl.rb.Clone().
+		Path("/api/3/contactAutomations").
+		BodyJSON(ContactAutomationRequest{
+			ContactAutomation{contactID, automationID},
+		}).
+		Fetch(ctx)
+}
+
 const SignUpSourceFieldID = "162"
+
+const OptInTestAutomation AutomationID = 76

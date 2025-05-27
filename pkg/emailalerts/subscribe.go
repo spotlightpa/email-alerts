@@ -104,7 +104,12 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 	}
 	if shouldConfirm {
 		app.Printf("user email=%q id=%d needs to be confirmed", emailAddress, contactID)
-		// TODO: Add to confirmation automation
+		if err = app.ac.AddToAutomation(
+			r.Context(), contactID, activecampaign.OptInTestAutomation,
+		); err != nil {
+			// Log and continue on error
+			app.logErr(r.Context(), err)
+		}
 	}
 
 	now := time.Now()
@@ -125,7 +130,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		if !ok {
 			continue
 		}
-		app.l.Printf("add to list %v", activecampaign.ListID(listID))
+		app.l.Printf("should to list %v", activecampaign.ListID(listID))
 		sub := ListAdd{
 			EmailAddress: emailAddress,
 			ContactID:    contactID,
