@@ -54,37 +54,40 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 	}
 	emailAddress := emailx.Normalize(req.EmailAddress)
 
-	if !app.kb.Verify(r.Context(), emailAddress) {
-		err := resperr.New(http.StatusBadRequest,
-			"Kickbox rejected %q", emailAddress)
-		err = resperr.E{E: err,
-			M: "There was a problem with the email address entered. Please check it and try again."}
-		return app.replyErr(err)
-	}
-
-	ip := r.RemoteAddr
-	val, err := app.maxcl.IPInsights(r.Context(), ip,
-		"US", "CA", "UK", "PR")
-	if err != nil {
-		return app.replyErr(err)
-	}
-	if val == maxmind.ResultFailed {
-		return app.replyErr(resperr.E{
-			M: "Sorry, due to spam concerns, we are not accepting international subscribers at this time."})
-	}
-	app.l.Printf("should subscribe: email=%q", emailAddress)
+	app.l.Printf("find account: email=%q", emailAddress)
 	res, err := app.ac.FindContactByEmail(r.Context(), emailAddress)
 	if err != nil {
 		return app.replyErr(err)
 	}
 
-	shouldConfirm := false
+	foundAccount, shouldConfirm := false, false
 	var contactID activecampaign.ContactID
 
 	if len(res.Contacts) == 1 {
+		foundAccount = true
 		contactID = res.Contacts[0].ID
 		app.l.Printf("found user: email=%q id=%d", emailAddress, contactID)
-	} else {
+	}
+
+	if !foundAccount {
+		ip := r.RemoteAddr
+		val, err := app.maxcl.IPInsights(r.Context(), ip,
+			"US", "CA", "UK", "PR")
+		if err != nil {
+			return app.replyErr(err)
+		}
+		if val == maxmind.ResultFailed {
+			return app.replyErr(resperr.E{
+				M: "Sorry, due to spam concerns, we are not accepting international subscribers at this time."})
+		}
+
+		if !app.kb.Verify(r.Context(), emailAddress) {
+			err := resperr.New(http.StatusBadRequest,
+				"Kickbox rejected %q", emailAddress)
+			err = resperr.E{E: err,
+				M: "There was a problem with the email address entered. Please check it and try again."}
+			return app.replyErr(err)
+		}
 		if val == maxmind.ResultProvisional {
 			shouldConfirm = true
 		}
@@ -115,7 +118,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 	now := time.Now()
 	var messages []string
 	for listID, ok := range []bool{
-		activecampaign.ListMaster:          true,
+		activecampaign.ListMaster:          !foundAccount,
 		activecampaign.ListPALocal:         req.PALocal == "1",
 		activecampaign.ListPAPost:          req.PAPost == "1",
 		activecampaign.ListInvestigator:    req.Investigator == "1",
@@ -123,14 +126,14 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		activecampaign.ListTalkOfTheTown:   req.TalkOfTheTown == "1" || req.StateCollege == "1",
 		activecampaign.ListPennStateAlerts: req.PennStateAlerts == "1",
 		activecampaign.ListBerksCounty:     req.BerksCounty == "1" || req.Berks == "1",
-		activecampaign.ListBreakingNews:    req.BreakingNews == "1",
-		activecampaign.ListWeekInReview:    req.WeekInReview == "1",
-		activecampaign.ListEvents:          req.Events == "1",
+		activecampaign.ListBreakingNews:    !foundAccount,
+		activecampaign.ListWeekInReview:    !foundAccount,
+		activecampaign.ListEvents:          !foundAccount,
 	} {
 		if !ok {
 			continue
 		}
-		app.l.Printf("should to list %v", activecampaign.ListID(listID))
+		app.l.Printf("should add to list %v", activecampaign.ListID(listID))
 		sub := ListAdd{
 			EmailAddress: emailAddress,
 			ContactID:    contactID,
