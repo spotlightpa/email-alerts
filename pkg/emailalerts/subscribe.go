@@ -88,7 +88,10 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 				M: "There was a problem with the email address entered. Please check it and try again."}
 			return app.replyErr(err)
 		}
-		if val == maxmind.ResultProvisional {
+		if val == maxmind.ResultProvisional &&
+			// Be less strict for .org and .gov
+			!strings.HasSuffix(emailAddress, ".org") &&
+			!strings.HasSuffix(emailAddress, ".gov") {
 			shouldConfirm = true
 		}
 		app.l.Printf("not found; creating user: email=%q", emailAddress)
