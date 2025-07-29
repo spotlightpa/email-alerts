@@ -74,6 +74,5 @@ func (app *appEnv) ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *appEnv) getToken(w http.ResponseWriter, r *http.Request) http.Handler {
-	// TODO: Check IP first
 	return app.replyJSON(app.createToken(time.Now()))
 }
