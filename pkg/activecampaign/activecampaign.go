@@ -111,7 +111,7 @@ type (
 	AutomationID int
 )
 
-//go:generate go run golang.org/x/tools/cmd/stringer@latest -trimprefix List -type ListID
+//go:generate go tool stringer -trimprefix List -type ListID
 const (
 	ListMaster          ListID = 1
 	ListPALocal         ListID = 3
@@ -124,9 +124,10 @@ const (
 	ListBreakingNews    ListID = 10
 	ListWeekInReview    ListID = 11
 	ListEvents          ListID = 13
+	ListLehighValley    ListID = 19
 )
 
-//go:generate go run golang.org/x/tools/cmd/stringer@latest -trimprefix Status -type Status
+//go:generate go tool stringer -trimprefix Status -type Status
 const (
 	StatusUnconfirmed  Status = 0
 	StatusActive       Status = 1
