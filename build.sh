@@ -9,5 +9,5 @@ cd "$THIS_DIR"
 
 GOPKG="github.com/spotlightpa/email-alerts/pkg/emailalerts"
 URL=${DEPLOY_PRIME_URL:-http://local.dev}
-LDFLAGS="-X '$GOPKG.DeployURL=$URL'"
-CGO_ENABLED=0 GOBIN=$THIS_DIR/functions go install -ldflags "$LDFLAGS" ./cmd/...
+LDFLAGS="-X '$GOPKG.DeployURL=$URL' -linkmode external -extldflags "-static""
+GOBIN=$THIS_DIR/functions go install -ldflags "$LDFLAGS" ./cmd/...
