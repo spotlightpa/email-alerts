@@ -120,7 +120,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 	}
 
 	now := time.Now()
-	var messages []string
+	messages := make([]string, 0) // Ensure non-null array in JSON
 	for listID, ok := range []bool{
 		activecampaign.ListMaster:          !foundAccount,
 		activecampaign.ListPALocal:         req.PALocal == "1",
