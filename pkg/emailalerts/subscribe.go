@@ -43,6 +43,9 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		Care                    string `json:"care"`
 		Token                   string `json:"token"`
 		SignUpSource            string `json:"source"`
+		Campaign                string `json:"utm_campaign"`
+		Medium                  string `json:"utm_medium"`
+		Source                  string `json:"utm_source"`
 	}
 	if err := app.readJSON(r, &req); err != nil {
 		return app.replyErr(err)
@@ -104,7 +107,20 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 				{
 					Field: activecampaign.SignUpSourceFieldID,
 					Value: req.SignUpSource,
-				}}}); err != nil {
+				},
+				{
+					Field: activecampaign.CampaignFieldID,
+					Value: req.Campaign,
+				},
+				{
+					Field: activecampaign.MediumFieldID,
+					Value: req.Medium,
+				},
+				{
+					Field: activecampaign.SourceFieldID,
+					Value: req.Source,
+				},
+			}}); err != nil {
 			return app.replyErr(err)
 		}
 		app.Printf("created user email=%q id=%d", emailAddress, contactID)

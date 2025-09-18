@@ -24,8 +24,8 @@ type Client struct {
 }
 
 type FieldValue struct {
-	Field string `json:"field"`
-	Value string `json:"value"`
+	Field FieldID `json:"field,string"`
+	Value string  `json:"value"`
 }
 
 type Contact struct {
@@ -109,6 +109,7 @@ type (
 	ContactID    int
 	Status       int
 	AutomationID int
+	FieldID      int
 )
 
 //go:generate go tool stringer -trimprefix List -type ListID
@@ -171,6 +172,9 @@ func (cl Client) AddToAutomation(ctx context.Context, contactID ContactID, autom
 		Fetch(ctx)
 }
 
-const SignUpSourceFieldID = "162"
+const CampaignFieldID FieldID = 74
+const SourceFieldID FieldID = 75
+const MediumFieldID FieldID = 76
+const SignUpSourceFieldID FieldID = 162
 
 const OptInTestAutomation AutomationID = 76
