@@ -172,9 +172,9 @@ func (cl Client) AddToAutomation(ctx context.Context, contactID ContactID, autom
 		Fetch(ctx)
 }
 
-const CampaignFieldID FieldID = 74
-const SourceFieldID FieldID = 75
-const MediumFieldID FieldID = 76
+const CampaignFieldID FieldID = 184
+const MediumFieldID FieldID = 185
+const SourceFieldID FieldID = 186
 const SignUpSourceFieldID FieldID = 162
 
 const OptInTestAutomation AutomationID = 76
