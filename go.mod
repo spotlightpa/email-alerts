@@ -1,6 +1,6 @@
 module github.com/spotlightpa/email-alerts
 
-go 1.24
+go 1.26
 
 require (
 	github.com/carlmjohnson/be v0.24.1
