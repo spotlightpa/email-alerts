@@ -35,6 +35,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		TalkOfTheTown           string `json:"talkofthetown"` // Alias for StateCollege
 		StateCollege            string `json:"state_college"`
 		LehighValley            string `json:"lehigh_valley"`
+		IdeasFest               string `json:"ideasfestival"`
 		WeekInReview            string `json:"week_in_review"`
 		PennStateAlerts         string `json:"pennstatealert"`
 		CentreCountyDocumenters string `json:"centre_county_documenters"` // Alias for CentreDocumenters
@@ -147,6 +148,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		activecampaign.ListPennStateAlerts: req.PennStateAlerts == "1",
 		activecampaign.ListBerksCounty:     req.BerksCounty == "1" || req.Berks == "1",
 		activecampaign.ListLehighValley:    req.LehighValley == "1",
+		activecampaign.ListIdeasFest:       req.IdeasFest == "1",
 		activecampaign.ListBreakingNews:    !foundAccount,
 		activecampaign.ListWeekInReview:    !foundAccount,
 		activecampaign.ListEvents:          !foundAccount,
