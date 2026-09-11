@@ -42,6 +42,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		CentreDocumenters       string `json:"centredocumenters"`
 		HowWeCare               string `json:"howwecare"` // Alias for care
 		Care                    string `json:"care"`
+		Games                   string `json:"games"`
 		Token                   string `json:"token"`
 		SignUpSource            string `json:"source"`
 		Campaign                string `json:"utm_campaign"`
@@ -149,6 +150,7 @@ func (app *appEnv) postVerifySubscribe(w http.ResponseWriter, r *http.Request) h
 		activecampaign.ListBerksCounty:     req.BerksCounty == "1" || req.Berks == "1",
 		activecampaign.ListLehighValley:    req.LehighValley == "1",
 		activecampaign.ListIdeasFest:       req.IdeasFest == "1",
+		activecampaign.ListGames:           req.Games == "1",
 		activecampaign.ListBreakingNews:    !foundAccount,
 		activecampaign.ListWeekInReview:    !foundAccount,
 		activecampaign.ListEvents:          !foundAccount,

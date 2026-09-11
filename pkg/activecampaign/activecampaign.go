@@ -127,6 +127,7 @@ const (
 	ListEvents          ListID = 13
 	ListLehighValley    ListID = 19
 	ListIdeasFest       ListID = 23
+	ListGames           ListID = 28
 )
 
 //go:generate go tool stringer -trimprefix Status -type Status
