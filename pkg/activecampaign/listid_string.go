@@ -21,6 +21,7 @@ func _() {
 	_ = x[ListEvents-13]
 	_ = x[ListLehighValley-19]
 	_ = x[ListIdeasFest-23]
+	_ = x[ListGames-28]
 }
 
 const (
@@ -29,6 +30,7 @@ const (
 	_ListID_name_2 = "Events"
 	_ListID_name_3 = "LehighValley"
 	_ListID_name_4 = "IdeasFest"
+	_ListID_name_5 = "Games"
 )
 
 var (
@@ -48,6 +50,8 @@ func (i ListID) String() string {
 		return _ListID_name_3
 	case i == 23:
 		return _ListID_name_4
+	case i == 28:
+		return _ListID_name_5
 	default:
 		return "ListID(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
