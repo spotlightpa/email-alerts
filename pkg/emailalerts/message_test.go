@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/carlmjohnson/be"
+	"github.com/earthboundkid/assert"
 	"github.com/spotlightpa/email-alerts/pkg/emailalerts"
 )
 
@@ -24,15 +24,16 @@ func TestMessageEncodeDecode(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		tt := assert.Continues(t)
 		var msg emailalerts.Message
 
-		be.NilErr(t, msg.Encode(tc))
+		tt.NilError(msg.Encode(tc))
 
-		be.Nonzero(t, msg.Body)
+		tt.Truthy(msg.Body)
 
 		objptrval := reflect.New(reflect.TypeOf(tc))
-		be.NilErr(t, msg.Decode(objptrval.Interface()))
+		tt.NilError(msg.Decode(objptrval.Interface()))
 
-		be.DeepEqual(t, tc, objptrval.Elem().Interface())
+		tt.DeepEqual(tc, objptrval.Elem().Interface())
 	}
 }

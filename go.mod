@@ -3,10 +3,10 @@ module github.com/spotlightpa/email-alerts
 go 1.27
 
 require (
-	github.com/carlmjohnson/be v0.25.2
 	github.com/carlmjohnson/exitcode v0.20.2
 	github.com/carlmjohnson/gateway v1.22.2
 	github.com/carlmjohnson/requests v0.26.1
+	github.com/earthboundkid/assert v0.26.6
 	github.com/earthboundkid/emailx/v2 v2.24.1
 	github.com/earthboundkid/flagx/v2 v2.25.1
 	github.com/earthboundkid/mid v0.26.1
