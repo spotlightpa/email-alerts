@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/carlmjohnson/be"
 	"github.com/carlmjohnson/requests"
 	"github.com/carlmjohnson/requests/reqtest"
+	"github.com/earthboundkid/assert"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"
 	"github.com/spotlightpa/email-alerts/pkg/kickbox"
 	"github.com/spotlightpa/email-alerts/pkg/maxmind"
@@ -23,6 +23,7 @@ func fixIP(h http.Handler) http.Handler {
 }
 
 func TestEndToEnd(t *testing.T) {
+	tt := assert.FailsNow(t)
 	cl := http.Client{}
 	cl.Transport = reqtest.Replay("testdata")
 	app := appEnv{
@@ -45,7 +46,7 @@ func TestEndToEnd(t *testing.T) {
 			BodyJSON(nil).
 			CheckStatus(400).
 			Fetch(t.Context())
-		be.NilErr(t, err)
+		tt.NilError(err)
 	}
 	{ // Should fail if no token
 		var res any
@@ -57,7 +58,7 @@ func TestEndToEnd(t *testing.T) {
 			CheckStatus(400).
 			ToJSON(&res).
 			Fetch(t.Context())
-		be.NilErr(t, err)
+		tt.NilError(err)
 	}
 	{ // Get a token
 		var data struct {
@@ -67,8 +68,8 @@ func TestEndToEnd(t *testing.T) {
 			Path("/api/token").
 			ToJSON(&data).
 			Fetch(t.Context())
-		be.NilErr(t, err)
-		be.In(t, ".", data.Data)
+		tt.NilError(err)
+		tt.Match(data.Data, `\.`)
 		token = data.Data
 	}
 	{ // Use token for request
@@ -82,7 +83,7 @@ func TestEndToEnd(t *testing.T) {
 			CheckStatus(200).
 			ToJSON(&res).
 			Fetch(t.Context())
-		be.NilErr(t, err)
+		tt.NilError(err)
 	}
 	{ // Should fail if no JSON
 		err := rb.Clone().
@@ -90,7 +91,7 @@ func TestEndToEnd(t *testing.T) {
 			BodyJSON(nil).
 			CheckStatus(400).
 			Fetch(t.Context())
-		be.NilErr(t, err)
+		tt.NilError(err)
 	}
 	{ // Should fail if no signature
 		var res any
@@ -100,7 +101,7 @@ func TestEndToEnd(t *testing.T) {
 			CheckStatus(400).
 			ToJSON(&res).
 			Fetch(t.Context())
-		be.NilErr(t, err)
+		tt.NilError(err)
 	}
 	{ // fail future messages
 		msg := Message{CreatedAt: time.Now().AddDate(1, 0, 0)}
@@ -115,7 +116,7 @@ func TestEndToEnd(t *testing.T) {
 			CheckStatus(400).
 			ToJSON(&res).
 			Fetch(t.Context())
-		be.NilErr(t, err)
+		tt.NilError(err)
 	}
 	{ // fail old messages
 		msg := Message{CreatedAt: time.Now().AddDate(0, 0, -1)}
@@ -130,7 +131,7 @@ func TestEndToEnd(t *testing.T) {
 			CheckStatus(400).
 			ToJSON(&res).
 			Fetch(t.Context())
-		be.NilErr(t, err)
+		tt.NilError(err)
 	}
 	{ // accept a signed, current message
 		msg := Message{CreatedAt: time.Now()}
@@ -145,6 +146,6 @@ func TestEndToEnd(t *testing.T) {
 			CheckStatus(200).
 			ToJSON(&res).
 			Fetch(t.Context())
-		be.NilErr(t, err)
+		tt.NilError(err)
 	}
 }
