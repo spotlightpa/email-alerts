@@ -4,13 +4,13 @@ go 1.27
 
 require (
 	github.com/carlmjohnson/exitcode v0.20.2
-	github.com/carlmjohnson/gateway v1.22.2
 	github.com/carlmjohnson/requests v0.26.1
-	github.com/earthboundkid/assert v0.26.6
+	github.com/earthboundkid/assert v0.26.8
 	github.com/earthboundkid/emailx/v2 v2.24.1
-	github.com/earthboundkid/flagx/v2 v2.25.1
-	github.com/earthboundkid/mid v0.26.1
-	github.com/earthboundkid/resperr/v2 v2.25.1
+	github.com/earthboundkid/flagx/v2 v2.26.1
+	github.com/earthboundkid/gateway/v2 v2.26.1
+	github.com/earthboundkid/mid v0.26.2
+	github.com/earthboundkid/resperr/v2 v2.26.1
 	github.com/earthboundkid/versioninfo/v2 v2.24.1
 	github.com/getsentry/sentry-go v0.49.0
 	github.com/go-chi/chi/v5 v5.4.0
