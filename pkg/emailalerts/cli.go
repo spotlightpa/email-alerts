@@ -12,9 +12,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/carlmjohnson/gateway"
 	"github.com/carlmjohnson/requests"
 	"github.com/earthboundkid/flagx/v2"
+	"github.com/earthboundkid/gateway/v2"
 	"github.com/earthboundkid/versioninfo/v2"
 	"github.com/getsentry/sentry-go"
 	"github.com/spotlightpa/email-alerts/pkg/activecampaign"

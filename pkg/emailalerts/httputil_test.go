@@ -19,7 +19,7 @@ func TestVerifyToken(t *testing.T) {
 		valid        bool
 		setupFunc    func() string
 	}
-	assert.Run(t, map[string]testcase{
+	assert.RunAll(t, map[string]testcase{
 		"valid token": {
 			sinceSigning: 1,
 			valid:        true,
